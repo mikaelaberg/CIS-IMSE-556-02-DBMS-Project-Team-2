@@ -31,6 +31,9 @@ def graduation_application():
 def alumni_page():
     return render_template('alumni_page.html')
 
+@app.route('/faculty_page')
+def faculty_page():
+    return render_template('faculty_page.html')
 @app.route('/test_db')
 def test_db():
     try:

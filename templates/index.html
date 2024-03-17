@@ -42,11 +42,42 @@
         <a href="/course_registration">Course Registration</a>
         <a href="/graduation_application">Graduation Application/Audit</a>
         <a href="/alumni_page">Alumni Page</a>
+        <a href="/faculty_page">Faculty Page</a>
+    </div>
+    <div id="login-form">
+        <h2>Login</h2>
+         <input type="text" id="username" placeholder="Username">
+        <button onclick="redirectBasedOnRole()">Login</button>
     </div>
     <div class="main-content">
         <h1>Welcome to the University Portal</h1>
         <p>Select an option from the menu to get started.</p>
     </div>
 </body>
+<script>
+    function redirectBasedOnRole(){
+        const username =document.getElementById('username').value;
+        switch (username){
+            case 'User':
+                window.location.href='/';
+                break;
+            case 'Applicant':
+                window.location.href="/university_applications";
+                break;
+            case 'Graduate Student':
+                window.location.href="/graduation_application";
+                break;
+            case 'Alumni':
+                window.location.href="/alumni_page";
+                break;
+            case 'Faculty':
+                window.location.href="/faculty_page";
+                break;
+            default:
+                alert('Invalid role. Please enter a valid role.');
+                break;
+        }
+    }
+</script>
 </html>
 
