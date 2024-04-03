@@ -1,6 +1,6 @@
 -- Table: starrs.USER
 
-DROP TABLE IF EXISTS starrs."USER";
+DROP TABLE starrs."USER" CASCADE;
 
 CREATE TABLE IF NOT EXISTS starrs."USER"
 (
@@ -25,7 +25,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."USER"
     OWNER to postgres;
-	
+
 -- Table: starrs.ALUMNI
 
 DROP TABLE IF EXISTS starrs."ALUMNI";
@@ -47,7 +47,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."ALUMNI"
     OWNER to postgres;
-	
+
 -- Table: starrs.APPLICANT
 
 DROP TABLE IF EXISTS starrs."APPLICANT";
@@ -72,10 +72,10 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."APPLICANT"
     OWNER to postgres;
-	
+
 -- Table: starrs.FACULTY
 
-DROP TABLE IF EXISTS starrs."FACULTY";
+DROP TABLE starrs."FACULTY" CASCADE;
 
 CREATE TABLE IF NOT EXISTS starrs."FACULTY"
 (
@@ -92,7 +92,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."FACULTY"
     OWNER to postgres;
-	
+
 -- Table: starrs.GRADUATE_STUDENT
 
 DROP TABLE IF EXISTS starrs."GRADUATE_STUDENT";
@@ -114,10 +114,10 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."GRADUATE_STUDENT"
     OWNER to postgres;
-	
+
 -- Table: starrs.ADMISSION
 
-DROP TABLE IF EXISTS starrs."ADMISSION";
+DROP TABLE starrs."ADMISSION" CASCADE;
 
 CREATE TABLE IF NOT EXISTS starrs."ADMISSION"
 (
@@ -142,7 +142,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."ADMISSION"
     OWNER to postgres;
-	
+
 -- Table: starrs.ADMISSION_REVIEW
 
 DROP TABLE IF EXISTS starrs."ADMISSION_REVIEW";
@@ -172,7 +172,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."ADMISSION_REVIEW"
     OWNER to postgres;
-	
+
 -- Table: starrs.APPLICANT_DEGREE
 
 DROP TABLE IF EXISTS starrs."APPLICANT_DEGREE";
@@ -196,10 +196,9 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."APPLICANT_DEGREE"
     OWNER to postgres;
-	
--- Table: starrs.COURSE
 
-DROP TABLE IF EXISTS starrs."COURSE";
+-- Table: starrs.COURSE
+DROP TABLE starrs."COURSE" CASCADE;
 
 CREATE TABLE IF NOT EXISTS starrs."COURSE"
 (
@@ -213,7 +212,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."COURSE"
     OWNER to postgres;
-	
+
 -- Table: starrs.SECTION
 
 DROP TABLE IF EXISTS starrs."SECTION";
@@ -240,7 +239,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."SECTION"
     OWNER to postgres;
-	
+
 -- Table: starrs.ATTENDS_SECTION
 
 DROP TABLE IF EXISTS starrs."ATTENDS_SECTION";
@@ -267,7 +266,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."ATTENDS_SECTION"
     OWNER to postgres;
-	
+
 -- Table: starrs.RECOMMENDATION_LETTER
 
 DROP TABLE IF EXISTS starrs."RECOMMENDATION_LETTER";
@@ -303,10 +302,9 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."RECOMMENDATION_LETTER"
     OWNER to postgres;
-	
--- Table: starrs.GRAD_APPLICATION
 
-DROP TABLE IF EXISTS starrs."GRAD_APPLICATION";
+-- Table: starrs.GRAD_APPLICATION
+DROP TABLE starrs."GRAD_APPLICATION" CASCADE;
 
 CREATE TABLE IF NOT EXISTS starrs."GRAD_APPLICATION"
 (
@@ -326,7 +324,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."GRAD_APPLICATION"
     OWNER to postgres;
-	
+
 -- Table: starrs.GRADUATION_REVIEW
 
 DROP TABLE IF EXISTS starrs."GRADUATION_REVIEW";
@@ -350,7 +348,7 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS starrs."GRADUATION_REVIEW"
     OWNER to postgres;
-	
+
 -- View: starrs.ALUMNI_V
 
 -- DROP VIEW starrs."ALUMNI_V";
