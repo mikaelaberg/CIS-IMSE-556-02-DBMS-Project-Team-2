@@ -1,15 +1,93 @@
 <!DOCTYPE html>
-<!-- templates/index.html -->
+<!-- templates/faculty_page.html -->
 <html lang="en">
 {% extends 'layout.html' %}
 
-{% block title %}Main Page{% endblock %}
+{% block title %}Faculty Page{% endblock %}
 
 {% block content %}
 <div class="main-content">
-    <h1>Welcome to the University Portal</h1>
+    <h1>Welcome to the Faculty Page</h1>
     <p>Select an option from the menu to get started.</p>
 </div>
+<div class="container">
+    <h1>Admission Review</h1>
+    <div id="pendingApplications">
+        <!-- List of pending applications will be displayed here -->
+    </div>
+    <div id="reviewForm" style="display: none;">
+        <!-- Review form for selected application will be displayed here -->
+    </div>
+</div>
 
+<script>
+// Function to display pending applications
+function fetchPendingApplications() {
+    fetch('/pending_applications')
+    .then(response => response.json())
+    .then(data => {
+        const pendingApplications = data.pendingApplications;
+        const pendingList = document.getElementById('pendingApplications');
+        pendingList.innerHTML = ''; // Clear existing list
+
+        pendingApplications.forEach(application => {
+            const applicationItem = document.createElement('div');
+            applicationItem.classList.add('application-item');
+            applicationItem.innerHTML = `<button onclick="showReviewForm('${application}')">${application}</button>`;
+            pendingList.appendChild(applicationItem);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching pending applications:', error);
+    });
+}
+
+// Function to show review form for selected application
+function showReviewForm(applicationNumber) {
+    const reviewForm = document.getElementById('reviewForm');
+    reviewForm.innerHTML = `
+        <h2>Review Form for Application ${applicationNumber}</h2>
+        <label for="ranking">Ranking/Recommendation:</label>
+        <select id="ranking">
+            <option value="1">Reject</option>
+            <option value="2">Borderline</option>
+            <option value="3">Admit without Aid</option>
+            <option value="4">Admit with Aid</option>
+        </select>
+        <label for="comments">Comments:</label>
+        <textarea id="comments" placeholder="Enter comments (max 100 characters)"></textarea>
+        <label for="advisor">Advisor (if admitted):</label>
+        <input type="text" id="advisor" placeholder="Enter advisor's name">
+        <div class="button-container">
+            <button onclick="submitReview('${applicationNumber}')">Submit Review</button>
+        </div>
+    `;
+
+    reviewForm.style.display = 'block';
+}
+
+// Function to submit review
+function submitReview(applicationNumber) {
+    const ranking = document.getElementById('ranking').value;
+    const comments = document.getElementById('comments').value;
+    const advisor = document.getElementById('advisor').value;
+
+    // Assuming pendingApplications is accessible here
+    const index = pendingApplications.indexOf(applicationNumber);
+    if (index !== -1) {
+        pendingApplications.splice(index, 1);
+    }
+
+    // Update the display to remove the reviewed application
+    fetchPendingApplications();
+
+    // Hide review form after submission
+    document.getElementById('reviewForm').style.display = 'none';
+}
+
+// Display pending applications on page load
+window.onload = fetchPendingApplications;
+
+</script>
 {% endblock %}
 </html>

@@ -7,10 +7,21 @@ app = Flask(__name__)
 db_config = {
     'dbname': 'postgres',
     'user': 'postgres',
-    'password': 'Cosmopeepaws123',
+    'password': 'Harshitha@16',
     'host': 'localhost'
 }
-
+def get_pending_applications():
+    try:
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute('SELECT "USER_ID" FROM starrs."APPLICANT"')
+        pending_applications = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return pending_applications
+    except psycopg2.Error as e:
+        print("Error retrieving pending applications:", e)
+        return []
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -30,7 +41,10 @@ def graduation_application():
 @app.route('/alumni_page')
 def alumni_page():
     return render_template('alumni_page.html')
-
+@app.route('/pending_applications')
+def pending_applications():
+    pendingApplications = get_pending_applications()
+    return jsonify(pendingApplications=pendingApplications)
 @app.route('/faculty_page')
 def faculty_page():
     return render_template('faculty_page.html')
