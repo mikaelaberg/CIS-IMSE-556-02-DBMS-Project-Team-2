@@ -11,17 +11,14 @@ db_config = {
     'password': 'Harshitha@16',
     'host': 'localhost'
 }
-<<<<<<< HEAD
 
 
 
-=======
->>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
 def get_pending_applications():
     try:
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
-<<<<<<< HEAD
+
         cursor.execute('''
             SELECT "ADMISSION_ID" 
             FROM starrs."ADMISSION" 
@@ -30,17 +27,15 @@ def get_pending_applications():
                 FROM starrs."ADMISSION_REVIEW"
             )
         ''')
-=======
-        cursor.execute('SELECT "USER_ID" FROM starrs."APPLICANT"')
->>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
         pending_applications = [row[0] for row in cursor.fetchall()]
         cursor.close()
         conn.close()
         return pending_applications
+
     except psycopg2.Error as e:
         print("Error retrieving pending applications:", e)
         return []
-<<<<<<< HEAD
+
 
 
 @app.route('/submit_review', methods=['POST'])
@@ -78,8 +73,7 @@ def submit_review():
         print("Error submitting review:", e)
         return jsonify({'success': False, 'message': f'Error submitting review: {str(e)}'})
 
-=======
->>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
+
 @app.route('/')
 def index():
     return render_template('index.html')
