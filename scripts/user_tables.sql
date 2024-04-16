@@ -2,7 +2,7 @@
 
 -- DROP TABLE IF EXISTS starss."USER";
 
-CREATE TABLE IF NOT EXISTS starss."USER"
+CREATE TABLE IF NOT EXISTS starrs."USER"
 (
     "USER_ID" character varying(10) COLLATE pg_catalog."default" NOT NULL,
     "FIRST_NAME" character varying(30) COLLATE pg_catalog."default",
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS starss."USER"
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS starss."USER"
+ALTER TABLE IF EXISTS starrs."USER"
     OWNER to postgres;
 	
 
