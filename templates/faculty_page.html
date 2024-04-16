@@ -95,6 +95,7 @@ function fetchPendingApplications() {
 }
 
 // Function to show review form for selected application
+<<<<<<< HEAD
 function showReviewForm(ADMISSION_ID) {
     const reviewForm = document.getElementById('reviewForm');
     reviewForm.innerHTML = `
@@ -103,10 +104,19 @@ function showReviewForm(ADMISSION_ID) {
         <input type="text" id="reviewer_id" name="reviewer_id" required><br>
         <label for="ranking">Ranking/Recommendation:</label>
         <select id="ranking" name="ranking">
+=======
+function showReviewForm(applicationNumber) {
+    const reviewForm = document.getElementById('reviewForm');
+    reviewForm.innerHTML = `
+        <h2>Review Form for Application ${applicationNumber}</h2>
+        <label for="ranking">Ranking/Recommendation:</label>
+        <select id="ranking">
+>>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
             <option value="1">Reject</option>
             <option value="2">Borderline</option>
             <option value="3">Admit without Aid</option>
             <option value="4">Admit with Aid</option>
+<<<<<<< HEAD
         </select><br>
         <label for="comments">Comments:</label>
         <textarea id="comments" name="comments" placeholder="Enter comments (max 100 characters)"></textarea>
@@ -121,6 +131,15 @@ function showReviewForm(ADMISSION_ID) {
         <input type="text" id="advisor" name="advisor" placeholder="Enter advisor's name">
         <div class="button-container">
             <button onclick="submitReview('${ADMISSION_ID}')">Submit Review</button>
+=======
+        </select>
+        <label for="comments">Comments:</label>
+        <textarea id="comments" placeholder="Enter comments (max 100 characters)"></textarea>
+        <label for="advisor">Advisor (if admitted):</label>
+        <input type="text" id="advisor" placeholder="Enter advisor's name">
+        <div class="button-container">
+            <button onclick="submitReview('${applicationNumber}')">Submit Review</button>
+>>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
         </div>
     `;
 
@@ -139,6 +158,7 @@ function updatePendingApplicationsList() {
     });
 }
 // Function to submit review
+<<<<<<< HEAD
 function submitReview(ADMISSION_ID) {
     const reviewer_id = document.getElementById('reviewer_id').value;
     const ranking = document.getElementById('ranking').value;
@@ -184,6 +204,24 @@ function submitReview(ADMISSION_ID) {
         console.error('Error submitting review:', error);
     });
       return false;
+=======
+function submitReview(applicationNumber) {
+    const ranking = document.getElementById('ranking').value;
+    const comments = document.getElementById('comments').value;
+    const advisor = document.getElementById('advisor').value;
+
+    const index = pendingApplications.findIndex(app => app === applicationNumber);
+
+    if (index !== -1) {
+        pendingApplications.splice(index, 1);
+    }
+
+    // Update the display to remove the reviewed application
+    updatePendingApplicationsList();
+
+    // Hide review form after submission
+    document.getElementById('reviewForm').style.display = 'none';
+>>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
 }
 
 // Display pending applications on page load
@@ -191,4 +229,8 @@ window.onload = fetchPendingApplications;
 
 </script>
 {% endblock %}
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 1ce84e71c6e3e316e64fd847a58c114cb0035169
