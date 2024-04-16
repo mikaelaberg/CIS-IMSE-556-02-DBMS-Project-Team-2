@@ -18,7 +18,6 @@ def get_pending_applications():
     try:
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
-
         cursor.execute('''
             SELECT "ADMISSION_ID" 
             FROM starrs."ADMISSION" 
@@ -31,11 +30,9 @@ def get_pending_applications():
         cursor.close()
         conn.close()
         return pending_applications
-
     except psycopg2.Error as e:
         print("Error retrieving pending applications:", e)
         return []
-
 
 
 @app.route('/submit_review', methods=['POST'])
@@ -72,7 +69,6 @@ def submit_review():
     except Exception as e:
         print("Error submitting review:", e)
         return jsonify({'success': False, 'message': f'Error submitting review: {str(e)}'})
-
 
 @app.route('/')
 def index():
