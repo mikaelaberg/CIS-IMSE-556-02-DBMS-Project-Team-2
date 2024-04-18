@@ -1,5 +1,6 @@
 import psycopg2
 import applicant_info
+import graduate_secretary
 from dbconfig import db_config
 from flask import Flask, render_template, jsonify
 
@@ -21,10 +22,14 @@ class User:
         self.country = ''
         self.zip = ''
         self.applicantinfo = applicant_info.Applicant_info()
+        self.gradsec = graduate_secretary.GraduateSecretary()
 
 
-    def login(self, id):
-        self.id = id
+    def login(self, login_id):
+        return self.get_user_data_for_id(login_id)
+
+    def get_user_data_for_id(self, user_id):
+        self.id = user_id
         try:
             conn = psycopg2.connect(**db_config)
             cur = conn.cursor()
@@ -83,6 +88,27 @@ class User:
             return self.applicantinfo.submitted_application()
         return False
 
+    def processApplicantApplication(self, form):
+        self.buildApplicantUser(form)
+
+    def buildApplicantUser(self, form):
+        self.fname = form['fname']
+        self.mname = form['mname']
+        self.lname = form['lname']
+        self.sex = ''#form['']
+        self.homephone = form['homephone']
+        self.cellphone = form['mobilephone']
+        self.workphone = form['workphone']
+        self.email = form['email']
+        self.street = form['street']
+        self.city = form['city']
+        self.state = form['state']
+        self.country = 'US'
+        self.zip = form['zip']
+        self.applicantinfo = applicant_info.Applicant_info()
+        self.applicantinfo.applicantId = self.id
+        self.applicantinfo.buildApplicantInfoFromForm(form)
+
     def applicantInfoExists(self):
         return (self.applicantinfo.applicantId != '')
     def get_applicant_info(self):
@@ -95,11 +121,20 @@ class User:
     def isGradStudent(self):
         return self.role == 'Grad_Student'
 
+    #Alumni Methods
     def isAlumni(self):
         return self.role == 'Alumni'
 
+    #Faculty Methods
     def isFaculty(self):
         return self.role == 'Faculty'
+
+    def get_graduate_secretary_status(self):
+        if self.isFaculty():
+            self.gradsec.faculty_id = self.id
+            self.gradsec.check_for_gs_records()
+            return self.gradsec.isGS
+        return False
 
     def build_user(self, user_tuple):
         if self.id == user_tuple[0]:
@@ -120,3 +155,31 @@ class User:
 
             return True
         return False
+
+    def save(self):
+        self.saveuserfields()
+
+        if self.isApplicant():
+            if self.applicantInfoExists():
+                self.applicantinfo.save()
+
+    def saveuserfields(self):
+        try:
+            conn = psycopg2.connect(**db_config)
+            cur = conn.cursor()
+            cur.execute("""
+                                UPDATE starrs."USER"
+	                            SET "FIRST_NAME"=%s, "MIDDLE_NAME"=%s, "LAST_NAME"=%s, "SEX"=%s, 
+	                            "HOME_PHONE"=%s, "CELL_PHONE"=%s, "WORK_PHONE"=%s, "EMAIL"=%s, 
+	                            "STREET_ADDRESS"=%s, "CITY"=%s, "STATE"=%s, "COUNTRY"=%s, "ZIP_CODE"=%s
+	                            WHERE "USER_ID"=%s;
+                              """,
+                        [self.fname, self.mname, self.lname, self.sex,
+                         self.homephone, self.cellphone, self.workphone, self.email,
+                         self.street, self.city, self.state, self.country, self.zip, self.id])
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except Exception as e:
+            return False
