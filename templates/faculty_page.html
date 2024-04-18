@@ -1,15 +1,57 @@
 <!DOCTYPE html>
 <!-- templates/index.html -->
 <html lang="en">
-{% extends 'layout.html' %}
+{% extends 'layout2.html' %}
 
 {% block title %}Main Page{% endblock %}
 
 {% block content %}
 <div class="main-content">
-    <h1>Welcome to the University Portal</h1>
-    <p>Select an option from the menu to get started.</p>
-</div>
+    <h1>Faculty Review Portal</h1>
 
+    <!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <table>
+        <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Status</th>
+            <th>Degree Program</th>
+            <th>Admitted Semester</th>
+            <th>GPA</th>
+            <th>Total Credit Hours</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for student in students %}
+            <tr>
+                <td>{{ student[0] }}</td>
+                <td>{{ student[1] }}</td>
+                <td>{{ student[2] }}</td>
+                <td>{{ student[3] }}</td>
+                <td>{{ student[4] }}</td>
+                <td>{{ student[5] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <form action="/submit_faculty_decision" method="post">
+    <input type="text" name="faculty_id" placeholder="Enter your Faculty ID" required>
+    <input type="text" name="student_id" placeholder="Enter Student ID" required>
+    <select name="decision" required>
+        <option value="">Select Decision</option>
+        <option value="APPROVED">APPROVED</option>
+        <option value="DENIED">DENIED</option>
+    </select>
+    <button type="submit">Submit Decision</button>
+</form>
+</div>
 {% endblock %}
 </html>

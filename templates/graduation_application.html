@@ -1,43 +1,89 @@
-<!-- //TODO::Populate the database so that I can carry out more test cases-->
+{% extends 'layout2.html' %}
 
-<!DOCTYPE html>
-<!-- templates/index.html -->
-<html lang="en">
-{% extends 'layout.html' %}
-
-{% block title %}MB Page - Graduation Process{% endblock %}
+{% block title %}Graduate Student Page{% endblock %}
 
 {% block content %}
 <div class="main-content">
-    <h1>Welcome to the University Portal</h1>
-    <p>This page is for the graduation application process</p>
+    <h1>Welcome to the Graduate Student Portal</h1>
+    <p>Please enter your student ID:</p>
 
+    <form action="/search_student" method="post">
+        <input type="text" name="user_id" placeholder="Enter your Student ID" required>
+        <select name="degree_program" required>
+            <option value="">Select your degree program</option>
+            <option value="BS">MSE</option>
+            <option value="MS">MS</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if data %}
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Degree Program</th>
+                    <th>Admitted Semester</th>
+                    <th>GPA</th>
+                    <th>Total Credit Hours</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>Last Name</th>
+                    <th>Sex</th>
+                    <th>Home Phone #</th>
+                    <th>Cell Phone #</th>
+                    <th>Work Phone #</th>
+                    <th>Email Address</th>
+                    <th>Street Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Country</th>
+                    <th>Zip Code</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
+                    <td>{{ row[7] }}</td>
+                    <td>{{ row[8] }}</td>
+                    <td>{{ row[9] }}</td>
+                    <td>{{ row[10] }}</td>
+                    <td>{{ row[11] }}</td>
+                    <td>{{ row[12] }}</td>
+                    <td>{{ row[13] }}</td>
+                    <td>{{ row[14] }}</td>
+                    <td>{{ row[15] }}</td>
+                    <td>{{ row[16] }}</td>
+                    <td>{{ row[17] }}</td>
+                    <td>{{ row[18] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if data[0][1] == 'APPROVED' %} <!-- Check if the status is APPROVED -->
+            <form action="/graduate_student" method="post">
+                <input type="hidden" name="user_id" value="{{ data[0][0] }}">
+                <button type="submit">I am ready to Graduate</button>
+            </form>
+        {% endif %}
+    {% else %}
+        <p>No data available. Please check the Student ID and Degree Program.</p>
+    {% endif %}
 </div>
-<script>
-window.onload = function() {
-    var studentId = prompt("Please enter your Student ID:", "");
-    if (studentId) {
-        fetch('/check-student-status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ studentId: studentId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            // Here you can update the page based on the response.
-            // For example, you could display the student's status.
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    } else {
-        console.log("No Student ID entered.");
-    }
-};
-</script>
-
 {% endblock %}
-</html>
