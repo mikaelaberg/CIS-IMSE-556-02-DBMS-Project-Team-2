@@ -1,0 +1,24 @@
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/standard.css">
+</head>
+{% extends 'layout2.html' %}
+
+{% block content %}
+<div class="main-content">
+    <h1>WELCOME APPLICANT</h1>
+
+    {% if applicationSubmitted %}
+    <p>Thanks for Submitting Your Application!</p>
+    <p><p><a href="/applicant/status" >Click Here</a> to Check on Your Application Status</p>
+    {% else %}
+    <p>You Still Need to Submit Your Application!</p>
+    <p><a href="/applicant/application" >Click Here</a> to Fill Out and Submit Your Application</p>
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
+
+</html>

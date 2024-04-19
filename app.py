@@ -5,6 +5,10 @@ from datetime import datetime
 import db_config
 import user
 from db_config import db_config
+import applicant_info
+import graduate_secretary
+
+
 
 app = Flask(__name__)
 active_user = user.User()
@@ -40,6 +44,12 @@ def login2(loginid):
 @app.route('/login_redirect')
 def login_redirect():
     return redirect(active_user.get_home())
+
+
+
+@app.route('/error')
+def error():
+    return render_template('error.html')
 
 
 @app.route('/error')
@@ -195,6 +205,7 @@ def audit_student():
 # Ensure this is the only place where '/faculty' route is defined
 @app.route('/faculty')
 def faculty_page():
+
     try:
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
@@ -339,6 +350,73 @@ def graduate_student():
     finally:
         cur.close()
         conn.close()
+
+
+    return render_template('faculty_page.html')
+
+@app.route('/faculty/graduatesecretary')
+def faculty_gradsec():
+    if(active_user.isFaculty()):
+        if active_user.get_graduate_secretary_status():
+            return render_template('faculty_gs.html', gsrecords=active_user.gradsec.gs_records)
+    return redirect('/error')
+
+@app.route('/faculty/update_admission/<admissionid>')
+def update_admission(admissionid):
+    if active_user.isFaculty():
+        if active_user.gradsec.isGS:
+            app_to_review = applicant_info.Application()
+            app_to_review.get_application_for_gs_review(admissionid)
+            user_to_review = user.User()
+            user_to_review.get_user_data_for_id(app_to_review.applicantid)
+            user_to_review.applicantinfo.application = app_to_review
+            return render_template('faculty_gs_update_admission.html', admission_user=user_to_review)
+    return redirect("/error")
+
+@app.route('/faculty/update_admission_submit', methods=['POST'])
+def update_admission_submit():
+    if active_user.isFaculty():
+        if active_user.gradsec.isGS:
+            applicationform = request.form
+            graduate_secretary.process_gs_update(applicationform)
+            return redirect("/faculty/graduatesecretary")
+    return redirect("/error")
+
+@app.route('/applicant/home')
+def applicant_home():
+    if(active_user.isApplicant()):
+        if not active_user.applicantInfoExists():
+            active_user.get_applicant_info()
+        if active_user.submittedApplication():
+            return render_template('applicant_home.html', applicationSubmitted=1)
+        else:
+            return render_template('applicant_home.html', applicationSubmitted=0)
+    else:
+        return redirect('/error')
+
+@app.route('/applicant/application')
+def applicant_application():
+    if(active_user.isApplicant()):
+        if not active_user.submittedApplication():
+            return render_template('applicant_application.html', applicantid=active_user.id)
+    return redirect('/error')
+
+@app.route('/applicant/submit', methods=['POST'])
+def applicant_submit():
+    if(active_user.isApplicant()):
+        if not active_user.submittedApplication():
+            applicationform = request.form
+            active_user.buildApplicantUser(applicationform)
+            active_user.save()
+            active_user.login(active_user.id)
+            return redirect('/applicant/success')
+    return redirect('/error')
+
+@app.route('/applicant/success')
+def applicant_success():
+    if(active_user.isApplicant()):
+        return render_template('applicant_success.html')
+    return redirect('/error')
 
 
 @app.route('/test_db')

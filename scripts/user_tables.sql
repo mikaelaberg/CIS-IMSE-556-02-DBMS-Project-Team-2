@@ -1,3 +1,8 @@
+DROP VIEW starrs."GRADUATE_STUDENT_V";
+DROP VIEW starrs."FACULTY_V";
+DROP VIEW starrs."APPLICANT_V";
+DROP VIEW starrs."ALUMNI_V";
+
 -- Table: starrs.USER
 
 DROP TABLE starrs."USER" CASCADE;
@@ -351,7 +356,9 @@ ALTER TABLE IF EXISTS starrs."GRADUATION_REVIEW"
 
 -- View: starrs.ALUMNI_V
 
+
 -- DROP VIEW starrs."ALUMNI_V";
+
 
 CREATE OR REPLACE VIEW starrs."ALUMNI_V"
  AS
@@ -381,7 +388,11 @@ ALTER TABLE starrs."ALUMNI_V"
 
 -- View: starrs.APPLICANT_V
 
+
 -- DROP VIEW starrs."APPLICANT_V";
+
+
+
 
 CREATE OR REPLACE VIEW starrs."APPLICANT_V"
  AS
@@ -413,7 +424,9 @@ ALTER TABLE starrs."APPLICANT_V"
 
 -- View: starrs.FACULTY_V
 
+
 -- DROP VIEW starrs."FACULTY_V";
+
 
 CREATE OR REPLACE VIEW starrs."FACULTY_V"
  AS
@@ -441,7 +454,9 @@ ALTER TABLE starrs."FACULTY_V"
 
 -- View: starrs.GRADUATE_STUDENT_V
 
+
 -- DROP VIEW starrs."GRADUATE_STUDENT_V";
+
 
 CREATE OR REPLACE VIEW starrs."GRADUATE_STUDENT_V"
  AS

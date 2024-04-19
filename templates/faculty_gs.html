@@ -1,0 +1,74 @@
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/standard.css">
+</head>
+{% extends 'layout_faculty.html' %}
+
+{% block content %}
+<div class="main-content">
+    <h1>Graduate Secretary</h1>
+    <p>Below are the Admissions you are responsible for</p>
+    <table style="border: 1px solid black;border-collapse: collapse;" rules="all">
+        <tr>
+            <th>
+                Admission ID
+            </th>
+            <th>
+                Applicant
+            </th>
+            <th>
+                Submission Date
+            </th>
+            <th>
+                Degree Sought
+            </th>
+            <th>
+                Transcript Received
+            </th>
+            <th>
+                Admission Status
+            </th>
+            <th>
+                Update Admission Record
+            </th>
+        </tr>
+        {% for gsr in gsrecords %}
+        <tr>
+            <td>
+                {{ gsr.admission_id }}
+            </td>
+            <td>
+                {{ gsr.applicant_lname }}, {{ gsr.applicant_fname }}
+            </td>
+            <td>
+                {{ gsr.app_date }}
+            </td>
+            <td>
+                {{ gsr.degree }}
+            </td>
+            <td>
+                {{ gsr.transcript_received }}
+            </td>
+            <td>
+                {{ gsr.admission_status }}
+            </td>
+            <td>
+                <button onclick="updateAdmission({{ gsr.admission_id }})">Update</button>
+            </td>
+        </tr>
+        {% endfor %}
+
+    </table>
+</div>
+
+<script>
+    function updateAdmission(admissionid){
+        let updateurl = '/faculty/update_admission/' + admissionid;
+        window.location.href = updateurl;
+    }
+</script>
+
+
+{% endblock %}
+
+</html>
