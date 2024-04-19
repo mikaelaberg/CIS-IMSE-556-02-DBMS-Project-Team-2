@@ -142,3 +142,30 @@ def test_db():
 if __name__ == '__main__':
     app.run(debug=True)
 
+
+@app.route('/check-student-status', methods=['POST'])
+def check_student_status():
+    data = request.json
+    student_id = data.get('STUDENT_ID')
+
+    # Connect to your PostgreSQL database
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="postgres",
+        password="Cosmopeepaws123",
+        host="localhost"
+    )
+    cur = conn.cursor()
+
+    # Query the database for the student status
+    cur.execute("""SELECT "STATUS" FROM starrs."GRAD_APPLICATION" WHERE "STUDENT_ID" = %s""", (student_id,))
+    status = cur.fetchone()
+
+    # Don't forget to close the connection
+    cur.close()
+    conn.close()
+
+    if status:
+        return jsonify({"status": status[0]})
+    else:
+        return jsonify({"error": "Student not found"}), 404

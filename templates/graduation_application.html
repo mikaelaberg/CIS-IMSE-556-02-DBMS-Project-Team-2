@@ -1,15 +1,43 @@
+<!-- //TODO::Populate the database so that I can carry out more test cases-->
+
 <!DOCTYPE html>
 <!-- templates/index.html -->
 <html lang="en">
 {% extends 'layout.html' %}
 
-{% block title %}Main Page{% endblock %}
+{% block title %}MB Page - Graduation Process{% endblock %}
 
 {% block content %}
 <div class="main-content">
     <h1>Welcome to the University Portal</h1>
-    <p>Select an option from the menu to get started.</p>
+    <p>This page is for the graduation application process</p>
+
 </div>
+<script>
+window.onload = function() {
+    var studentId = prompt("Please enter your Student ID:", "");
+    if (studentId) {
+        fetch('/check-student-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId: studentId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Here you can update the page based on the response.
+            // For example, you could display the student's status.
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    } else {
+        console.log("No Student ID entered.");
+    }
+};
+</script>
 
 {% endblock %}
 </html>
