@@ -76,7 +76,7 @@ class User:
         if (self.role == 'Alumni'):
             return '/alumni_page'
         if (self.role == 'Faculty'):
-            return '/faculty_page'
+            return '/faculty'
         return '/login'
 
     #Applicant methods
