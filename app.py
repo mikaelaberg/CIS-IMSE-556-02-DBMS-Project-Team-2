@@ -13,6 +13,65 @@ active_user = user.User()
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
 
 
+
+
+
+def get_pending_applications():
+    try:
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT "ADMISSION_ID" 
+            FROM starrs."ADMISSION" 
+            WHERE "ADMISSION_ID" NOT IN (
+                SELECT "ADMISSION_ID" 
+                FROM starrs."ADMISSION_REVIEW"
+            )
+        ''')
+        pending_applications = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return pending_applications
+    except psycopg2.Error as e:
+        print("Error retrieving pending applications:", e)
+        return []
+
+
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    data = request.get_json()
+    print("Received data:", data)
+    # Extract data from the request
+
+    reviewer_id = data['reviewer_id']
+    admission_id = data['admission_id']
+    ranking = data['ranking']
+    comments = data['comments']
+    decision = data['decision']
+    committee_id = data['committee_id']
+    advisor: object = data['advisor']
+    print("Extracted data:", reviewer_id, admission_id, ranking, comments, decision, committee_id,advisor)
+
+    # Insert the data into the database
+    try:
+        # Insert the data into the database
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\", \"ADVISOR\") VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (reviewer_id, admission_id, comments, ranking, decision, committee_id, advisor))
+        cur.execute(
+            "UPDATE starrs.\"ADMISSION\" SET \"ADMISSION_COMMENT\" = %s, \"ADMISSION_RANKING\" = %s, \"COMMITTEE_DECISION\" = %s, \"RECOMMENDED_ADVISOR\" = %s WHERE \"ADMISSION_ID\" = %s",
+            (comments, ranking, decision, advisor, admission_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Review submitted successfully")
+        return jsonify({'success': True, 'message': 'Review submitted successfully'})
+    except Exception as e:
+        print("Error submitting review:", e)
+        return jsonify({'success': False, 'message': f'Error submitting review: {str(e)}'})
+
 @app.route('/')
 def index():
     if active_user.is_valid():
@@ -244,6 +303,12 @@ def audit_student():
 # 20240417 - MB
 
 # Ensure this is the only place where '/faculty' route is defined
+
+@app.route('/pending_applications')
+def pending_applications():
+    pendingApplications = get_pending_applications()
+    return jsonify(pendingApplications=pendingApplications)
+
 @app.route('/faculty')
 def faculty_page():
     try:
@@ -406,3 +471,4 @@ def test_db():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
