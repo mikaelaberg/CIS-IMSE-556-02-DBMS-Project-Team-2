@@ -1,0 +1,24 @@
+<!-- templates/index.html -->
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./standard.css">
+</head>
+
+{% block content %}
+<div class="main-content">
+    <h1>Welcome to the University Portal</h1>
+    <p>Please log in using your university ID to get started.</p>
+    <input type="text" id="loginid" placeholder="Please Log in" />
+    <button onclick="login()">Log In</button>
+</div>
+<script>
+    function login(){
+        const userid = document.getElementById('loginid').value;
+        login_target = '/login2/' + userid
+        window.location.href = login_target;
+    }
+</script>
+{% endblock %}
+
+</html>
+

@@ -1,0 +1,393 @@
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/standard.css">
+</head>
+{% extends 'layout_faculty.html' %}
+
+{% block content %}
+<body onload="onload()">
+<form action="{{url_for('update_admission_submit')}}" method="post">
+<div class="main-content">
+    <h1>APPLICATION #{{admission_user.applicantinfo.application.admissionid}}</h1>
+    <h2>Personal</h2>
+     <table>
+            <tr>
+                <td>
+                    Full Name
+                </td>
+            </tr>
+            <tr>
+                    <td><input type="text" name="fname" value="{{admission_user.fname}}" disabled /></td>
+                    <td><input type="text" name="mname" value="{{admission_user.mname}}" disabled /></td>
+                    <td><input type="text" name="lname" value="{{admission_user.lname}}" disabled /></td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Student number
+                </td>
+                <td>
+                    <input type="text" name="useriddisplay" value="{{admission_user.id}}" disabled />
+                </td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Address-
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Street:</td>
+                <td><input type="text" name="street" value="{{admission_user.street}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>City:</td>
+                <td><input type="text" name="city" value="{{admission_user.city}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>State:</td>
+                <td><input type="text" name="state" value="{{admission_user.state}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Zip:</td>
+                <td><input type="text" name="zip" value="{{admission_user.zip}}" disabled /></td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Telephone Number(s)-
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Work:</td>
+                <td><input type="text" name="workphone" value="{{admission_user.workphone}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Mobile:</td>
+                <td><input type="text" name="mobilephone" value="{{admission_user.cellphone}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Home:</td>
+                <td><input type="text" name="homephone" value="{{admission_user.homephone}}" disabled /></td>
+            </tr>
+            <tr><td><br/></td></tr>
+             <tr>
+                 <td></td>
+                <td>
+                    Email:
+                </td>
+                <td><input type="text" name="email" value="{{admission_user.email}}" disabled /></td>
+            </tr>
+        </table>
+    <h2>Academic</h2>
+    <table>
+            <tr>
+                <td>
+                    Degree sought:
+                </td>
+                <td></td>
+                <td>
+                    <input type="text" name="degreesought" value="{{admission_user.applicantinfo.application.degree_sought}}" disabled />
+                </td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Prior Degrees-
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Bachelors:
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Year</td>
+                <td><input type="text" name="bachyear" value="{{admission_user.applicantinfo.application.bachelor_degree.year_issued}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Institution</td>
+                <td><input type="text" name="bachschool" value="{{admission_user.applicantinfo.application.bachelor_degree.university}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>GPA</td>
+                <td><input type="text" name="bachgpa" value="{{admission_user.applicantinfo.application.bachelor_degree.gpa}}" disabled /></td>
+            </tr>
+            <tr>
+                <td>
+                    Masters:
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Year</td>
+                <td><input type="text" name="msyear" value="{{admission_user.applicantinfo.application.masters_degree.year_issued}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Institution</td>
+                <td><input type="text" name="msschool" value="{{admission_user.applicantinfo.application.masters_degree.university}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>GPA</td>
+                <td><input type="text" name="msgpa" value="{{admission_user.applicantinfo.application.masters_degree.gpa}}" disabled /></td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    GRE scores-
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Total</td>
+                <td><input type="text" name="gretotal" value="{{admission_user.applicantinfo.application.gre_total}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Verbal</td>
+                <td><input type="text" name="greverbal" value="{{admission_user.applicantinfo.application.gre_verbal}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Analytical</td>
+                <td><input type="text" name="greanalytical" value="{{admission_user.applicantinfo.application.gre_analytical}}" disabled /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Quantitative</td>
+                <td><input type="text" name="grequant" value="{{admission_user.applicantinfo.application.gre_quantitative}}" disabled /></td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Prior Work Experience
+                </td>
+                <td></td>
+                <td><textarea name="pwxp" maxlength="250" disabled >{{admission_user.applicantinfo.application.work_experience}}</textarea></td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Preferred Starting Semester
+                </td>
+                <td></td>
+                <td>
+                    <input type="text" name="prefstartsem" value="{{admission_user.applicantinfo.application.expected_date}}" disabled />
+                </td>
+            </tr>
+            <tr><td><br/></td></tr>
+            <tr>
+                <td>
+                    Area of Interest
+                </td>
+                <td></td>
+                <td><textarea name="aoi" maxlength="250" disabled >{{admission_user.applicantinfo.application.area_of_interest}}</textarea></td>
+            </tr>
+    </table>
+    <h2>Recommendation Contacts</h2>
+    <input type="hidden" id="letterlength" name="lettercount" value="{{admission_user.applicantinfo.application.letters|length}}"  />
+    <table>
+        {% for letter in admission_user.applicantinfo.application.letters %}
+        <tr>
+            <td>Contact #{{loop.index}}</td>
+            <input type="hidden" value="{{letter.letter_id}}" name="letterid{{loop.index}}" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Name:</td>
+            <td><input type="text" value="{{letter.writer.fname}}" disabled /></td>
+            <td><input type="text" value="{{letter.writer.mname}}" disabled /></td>
+            <td><input type="text" value="{{letter.writer.lname}}" disabled /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Email:</td>
+            <td><input type="text" value="{{letter.writer.email}}" disabled /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Title:</td>
+            <td><input type="text" value="{{letter.writer.title}}" disabled /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Affiliation:</td>
+            <td><input type="text" value="{{letter.writer.affiliation}}" disabled /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Received:</td>
+            <td><input type="checkbox" onclick="checkletterreceived({{loop.index}})" id="letterreceivedbox{{loop.index}}" />
+            <input type="hidden" name="letterreceived{{loop.index}}" id="letterreceived{{loop.index}}" value="{{letter.letter_received}}"  /></td>
+
+            <td>Status:</td>
+            <td><select name="letterstatus{{loop.index}}" id="letterstatus{{loop.index}}">
+                    <option value="" selected disabled>--Select--</option>
+                    <option value="1">Top 5%</option>
+                    <option value="2">85-94%</option>
+                    <option value="3">70-84%</option>
+                    <option value="4">Below 70%</option>
+                </select>
+                <input type="hidden" id="letterstatushidden{{loop.index}}" value="{{letter.letter_score}}"  />
+            </td>
+        </tr>
+        <tr><td><br/></td></tr>
+        {% endfor %}
+
+    </table>
+    <h2>Administration</h2>
+    <table>
+        <tr>
+            <td>Status:</td>
+            <td></td>
+            <td><select onchange="validateStatusChange()" name="applicationstatus" id="applicationstatusid">
+                    <option value="Incomplete">Incomplete</option>
+                    <option value="Complete">Complete</option>
+                    <option value="Admitted">Admitted</option>
+                    <option value="Denied">Denied</option>
+                </select>
+                <input type="hidden" id="admissionstatushidden" value="{{admission_user.applicantinfo.application.admission_status}}" />
+            </td>
+        </tr>
+        <tr><td><br/></td></tr>
+        <tr>
+            <td>Transcript Received:</td>
+            <td></td>
+            <td><input type="checkbox" name="transcriptreceived" id="transcriptreceivedbox" />
+            <input type="hidden" id="transcriptreceivedid" value="{{admission_user.applicantinfo.application.transcript_received}}" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td><input type="hidden" name="admissionidinput" value="{{admission_user.applicantinfo.application.admissionid}}" />
+                <button type="submit">Update</button></td>
+        </tr>
+    </table>
+
+</div>
+</form>
+</body>
+<script>
+    function onload(){
+        checkrecvdboxes();
+        checktranscriptbox();
+        prepopulatedropdowns();
+    }
+
+    function prepopulatedropdowns(){
+        numberofletters = document.getElementById('letterlength').value;
+        for (let i = 1; i <= numberofletters; i++) {
+            elementid = 'letterstatushidden' + i;
+            status = document.getElementById(elementid).value;
+            if(status > 0)
+            {
+                ddid = 'letterstatus' + i;
+                document.getElementById(ddid).selectedIndex = status;
+            }
+        }
+
+        admissionstatus = document.getElementById('admissionstatushidden').value
+
+        switch (admissionstatus) {
+            case 'Incomplete':
+                document.getElementById('applicationstatusid').selectedIndex = 0;
+                break;
+            case 'Complete':
+                document.getElementById('applicationstatusid').selectedIndex = 1;
+                break;
+            case 'Admitted':
+                document.getElementById('applicationstatusid').selectedIndex = 2;
+                break;
+            case 'Denied':
+                document.getElementById('applicationstatusid').selectedIndex = 3;
+                break;
+            default:
+                document.getElementById('applicationstatusid').selectedIndex = 0;
+                break;
+        }
+    }
+
+    function checktranscriptbox(){
+        trcvd = document.getElementById('transcriptreceivedid').value;
+        if(trcvd == 'Y')
+        {
+            document.getElementById('transcriptreceivedbox').checked = true;
+        }
+    }
+
+    function checkrecvdboxes(){
+        numberofletters = document.getElementById('letterlength').value;
+        for (let i = 1; i <= numberofletters; i++) {
+            elementid = 'letterreceived' + i
+            recvd = document.getElementById(elementid).value;
+            if(recvd == 'Y')
+            {
+                boxid = 'letterreceivedbox' + i;
+                document.getElementById(boxid).checked = true;
+            }
+        }
+    }
+
+    function checkletterreceived(index){
+        elementid = 'letterreceived' + index
+        recvd = document.getElementById(elementid).value;
+        if(recvd == 'N'){
+            document.getElementById(elementid).value = 'Y';
+        }
+        else{
+            document.getElementById(elementid).value = 'N';
+            ddid = 'letterstatus' + index;
+            document.getElementById(ddid).selectedIndex = 0;
+        }
+        checkrecvdboxes();
+    }
+
+    function validateStatusChange(){
+        newVal = document.getElementById('applicationstatusid').value;
+        if(newVal == 'Incomplete' || newVal == 'Denied')
+        {
+            return;
+        }
+        else
+        {
+            if(!isAdmissionComplete())
+            {
+                document.getElementById('applicationstatusid').selectedIndex = 0;
+            }
+        }
+    }
+
+    function isAdmissionComplete(){
+        if (!document.getElementById('transcriptreceivedbox').checked)
+        {
+            alert('Transcript must be marked as received to switch to that status');
+            return false;
+        }
+        numberofletters = document.getElementById('letterlength').value;
+        for (let i = 1; i <= numberofletters; i++) {
+            elementid = 'letterreceivedbox' + i;
+            if(!document.getElementById(elementid).checked)
+            {
+                alert('All letters of recommendation must be marked as received to switch to that status');
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+
+{% endblock %}
+
+</html>
