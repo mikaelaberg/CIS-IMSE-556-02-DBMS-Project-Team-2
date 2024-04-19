@@ -1,7 +1,7 @@
 import psycopg2
 import applicant_info
+from db_config import db_config
 import graduate_secretary
-from dbconfig import db_config
 from flask import Flask, render_template, jsonify
 
 class User:
@@ -22,6 +22,12 @@ class User:
         self.country = ''
         self.zip = ''
         self.applicantinfo = applicant_info.Applicant_info()
+
+
+
+    def login(self, id):
+        self.id = id
+
         self.gradsec = graduate_secretary.GraduateSecretary()
 
 
@@ -30,6 +36,7 @@ class User:
 
     def get_user_data_for_id(self, user_id):
         self.id = user_id
+
         try:
             conn = psycopg2.connect(**db_config)
             cur = conn.cursor()
@@ -88,6 +95,7 @@ class User:
             return self.applicantinfo.submitted_application()
         return False
 
+=
     def processApplicantApplication(self, form):
         self.buildApplicantUser(form)
 
@@ -109,6 +117,7 @@ class User:
         self.applicantinfo.applicantId = self.id
         self.applicantinfo.buildApplicantInfoFromForm(form)
 
+
     def applicantInfoExists(self):
         return (self.applicantinfo.applicantId != '')
     def get_applicant_info(self):
@@ -120,6 +129,14 @@ class User:
     #Grad Student Methods
     def isGradStudent(self):
         return self.role == 'Grad_Student'
+
+
+    def isAlumni(self):
+        return self.role == 'Alumni'
+
+    def isFaculty(self):
+        return self.role == 'Faculty'
+
 
     #Alumni Methods
     def isAlumni(self):
@@ -154,6 +171,7 @@ class User:
             self.zip = user_tuple[14]
 
             return True
+
         return False
 
     def save(self):
@@ -183,3 +201,4 @@ class User:
             return True
         except Exception as e:
             return False
+

@@ -1,21 +1,43 @@
 import psycopg2
-from dbconfig import db_config
+from db_config import db_config
+
 
 class Applicant_info:
     def __init__(self):
         self.applicantId = ''
+
+        self.gre_verbal = 0
+        self.gre_analytical = 0
+        self.gre_quantitative = 0
+        self.transcript_received = 'N'
+        self.work_experience = ''
+        self.application = 0
+
+    def submitted_application(self):
+        if self.application:
         self.application = Application()
         self.application_ID = 0
 
 
     def submitted_application(self):
         if self.application.isValid():
+
             return True
         else:
             return False
 
     def buildApplicantInfo(self, admissiontuple):
         if self.applicantId == admissiontuple[0]:
+
+            self.gre_verbal = admissiontuple[1]
+            self.gre_analytical = admissiontuple[2]
+            self.gre_quantitative = admissiontuple[3]
+            self.transcript_received = admissiontuple[4]
+            self.work_experience = admissiontuple[5]
+            return True
+        return False
+
+
             # self.gre_verbal = admissiontuple[1]
             # self.gre_analytical = admissiontuple[2]
             # self.gre_quantitative = admissiontuple[3]
@@ -30,6 +52,7 @@ class Applicant_info:
         self.application.applicantid = self.applicantId
         self.application.buildApplicationFromForm(form)
 
+
     def get_applicant_info(self):
         try:
             conn = psycopg2.connect(**db_config)
@@ -39,10 +62,14 @@ class Applicant_info:
                    """,
                         [self.applicantId])
             applicant_row = cur.fetchone()
+
+            success = self.buildApplicantInfo(applicant_row)
+
             if applicant_row is not None:
                 success = self.buildApplicantInfo(applicant_row)
             else:
                 success = False
+
             cur.close()
             conn.close()
             self.get_application()
@@ -56,6 +83,7 @@ class Applicant_info:
         dbApplication.applicantid = self.applicantId
         if dbApplication.get_application():
             self.application = dbApplication
+
 
     def save(self):
         self.application.save()
@@ -97,18 +125,22 @@ class Applicant_info:
         except Exception as e:
             return False
 
+
 class Application:
     def __init__(self):
         self.admissionid = 0
         self.applicantid = ''
         self.area_of_interest = ''
         self.expected_date = ''
+
         self.admission_status = ''
+
         self.admission_date = ''
         self.committee_decision = ''
         self.admission_ranking = ''
         self.admission_comment = ''
         self.recommended_advisor = ''
+
         self.gre_total = 0
         self.gre_verbal = 0
         self.gre_analytical = 0
@@ -118,6 +150,7 @@ class Application:
         self.degree_sought = ''
         self.bachelor_degree = Applicant_Degree()
         self.masters_degree = Applicant_Degree()
+
         self.letters = []
 
     def isValid(self):
@@ -141,6 +174,20 @@ class Application:
             return success
         except Exception as e:
             return False
+
+
+    def buildApplication(self, applicationTuple):
+        if self.applicantid == applicationTuple[1]:
+            self.admissionid = applicationTuple[0]
+            self.area_of_interest = applicationTuple[2]
+            self.expected_date = applicationTuple[3]
+            self.admission_date = applicationTuple[4]
+            self.committee_decision = applicationTuple[5]
+            self.admission_ranking = applicationTuple[6]
+            self.admission_comment = applicationTuple[7]
+            self.recommended_advisor = applicationTuple[8]
+            return True
+        return False
 
     def get_application_for_gs_review(self, admission_id):
         self.admissionid = admission_id
@@ -362,6 +409,10 @@ class Recommendation_letter:
         self.admissionid = 0
         self.letter_qty = 0
         self.letter_score = 0
+
+        self.writer = Recommendation_letter_writer()
+
+
         self.letter_received = 'N'
         self.writer = Recommendation_letter_writer()
 
@@ -451,6 +502,7 @@ class Recommendation_letter:
         except Exception as e:
             return False
 
+
 class Recommendation_letter_writer:
     def __init__(self):
         self.fname = ''
@@ -465,6 +517,9 @@ class Recommendation_letter_writer:
         self.city = ''
         self.state = ''
         self.country = ''
+
+        self.zip = ''
+
         self.zip = ''
 
 class Applicant_Degree:
@@ -522,3 +577,4 @@ class Applicant_Degree:
             return True
         except Exception as e:
             return False
+
