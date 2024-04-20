@@ -178,10 +178,31 @@ def applicant_submit():
             return redirect('/applicant/success')
     return redirect('/error')
 
+
 @app.route('/applicant/success')
 def applicant_success():
     if(active_user.isApplicant()):
         return render_template('applicant_success.html')
+    return redirect('/error')
+
+
+@app.route('/applicant/status')
+def applicant_status():
+    if(active_user.isApplicant()):
+        active_user.applicantinfo.applicantId = active_user.id
+        active_user.applicantinfo.get_application_status()
+        return render_template('applicant_status.html', appstatus=active_user.applicantinfo.status)
+    return redirect('/error')
+
+
+@app.route('/applicant/enroll')
+def applicant_enroll():
+    if(active_user.isApplicant()):
+        if not active_user.applicantInfoExists():
+            active_user.get_applicant_info()
+        if(active_user.enroll()):
+            relogin = '/login2/' + active_user.id
+            return redirect(relogin)
     return redirect('/error')
 
 @app.route('/graduate')

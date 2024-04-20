@@ -1,5 +1,6 @@
 import psycopg2
 import applicant_info
+import grad_student
 import graduate_secretary
 from dbconfig import db_config
 from flask import Flask, render_template, jsonify
@@ -67,6 +68,8 @@ class User:
         self.state = ''
         self.country = ''
         self.zip = ''
+        self.applicantinfo = applicant_info.Applicant_info()
+        self.gradsec = graduate_secretary.GraduateSecretary()
 
     def get_home(self):
         if(self.role == 'Applicant'):
@@ -183,3 +186,13 @@ class User:
             return True
         except Exception as e:
             return False
+
+    def enroll(self):
+        if self.isApplicant() and self.applicantinfo.ready_to_enroll():
+            student_record = grad_student.Grad_Student()
+            student_record.student_id = self.id
+            student_record.status = ''
+            student_record.admitted_semester = self.applicantinfo.application.expected_date
+            student_record.degree_program = self.applicantinfo.application.degree_sought
+            return student_record.enroll()
+        return False

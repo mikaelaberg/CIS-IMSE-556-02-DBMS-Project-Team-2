@@ -6,6 +6,7 @@ class Applicant_info:
         self.applicantId = ''
         self.application = Application()
         self.application_ID = 0
+        self.status = Applicant_Status()
 
 
     def submitted_application(self):
@@ -30,6 +31,27 @@ class Applicant_info:
         self.application.applicantid = self.applicantId
         self.application.buildApplicationFromForm(form)
 
+    def get_application_status(self):
+        try:
+            conn = psycopg2.connect(**db_config)
+            cur = conn.cursor()
+            cur.execute("""
+                                SELECT "ADMISSION_ID", "STUDENT_ID", "ADMISSION_STATUS", "TRANSCRIPT_RECEIVED", 
+                                "LETTERS_PENDING"	FROM starrs."ADMISSION_STATUS_V" where "STUDENT_ID" = %s;
+                          """,
+                        [self.applicantId])
+            status_row = cur.fetchone()
+            if status_row is not None:
+                self.status.build_from_row(status_row)
+                success = True
+            else:
+                success = False
+            cur.close()
+            conn.close()
+            return success
+        except Exception as e:
+            return False
+
     def get_applicant_info(self):
         try:
             conn = psycopg2.connect(**db_config)
@@ -50,6 +72,8 @@ class Applicant_info:
         except Exception as e:
             return False
 
+    def ready_to_enroll(self):
+        return self.application.admission_status == 'Admitted'
 
     def get_application(self):
         dbApplication = Application()
@@ -522,3 +546,42 @@ class Applicant_Degree:
             return True
         except Exception as e:
             return False
+
+class Applicant_Status:
+    def __init__(self):
+        self.admission_id = 0
+        self.student_id = ''
+        self.admission_status = ''
+        self.transcript_received = ''
+        self.letters_pending = 0
+
+    def build_from_row(self, status_tuple):
+        self.admission_id = status_tuple[0]
+        self.student_id = status_tuple[1]
+        self.admission_status = status_tuple[2]
+        self.transcript_received = status_tuple[3]
+        self.letters_pending = status_tuple[4]
+
+    def get_overall_status(self):
+        if self.admission_status == 'Complete':
+            return 'Application Received and Decision Pending'
+        if self.admission_status == 'Admitted':
+            return 'Admission Decision: Accepted'
+        if self.admission_status == 'Denied':
+            return 'Admission Decision: Rejected'
+        if self.admission_status == 'Incomplete':
+            return 'Application Materials Missing'
+        return ''
+
+    def materials_received(self):
+        if self.transcript_received == 'N':
+            return False
+        if not self.letters_received():
+            return False
+        return True
+
+    def letters_received(self):
+        return int(self.letters_pending) == 0
+
+    def ready_to_enroll(self):
+        return self.admission_status == 'Admitted' and self.materials_received()
