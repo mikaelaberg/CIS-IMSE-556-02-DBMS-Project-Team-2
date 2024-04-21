@@ -3,31 +3,32 @@
 {% block title %}Graduate Student Page{% endblock %}
 
 {% block content %}
-<div class="main-content">
-    <h1>Welcome to the Graduate Student Portal</h1>
-    <p>Please enter your student ID:</p>
+    <div class="main-content">
+        <h1>Welcome to the Graduate Student Portal</h1>
+        <p>Please enter your student ID and degree program for audit:</p>
 
-    <form action="/search_student" method="post">
-        <input type="text" name="user_id" placeholder="Enter your Student ID" required>
-        <select name="degree_program" required>
-            <option value="">Select your degree program</option>
-            <option value="BS">MSE</option>
-            <option value="MS">MS</option>
-        </select>
-        <button type="submit">Submit</button>
-    </form>
+        <!-- Updated form for audit -->
+        <form action="/audit_student" method="post">
+            <input type="text" name="user_id" placeholder="Enter your Student ID" required>
+            <select name="degree_program" required>
+                <option value="">Select your degree program</option>
+                <option value="MSE">MSE</option>
+                <option value="MS">MS</option>
+            </select>
+            <button type="submit">Audit</button>
+        </form>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-    {% if data %}
-        <table>
-            <thead>
+        {% if data %}
+            <table>
+                <thead>
                 <tr>
                     <th>User ID</th>
                     <th>Status</th>
@@ -49,41 +50,47 @@
                     <th>Country</th>
                     <th>Zip Code</th>
                 </tr>
-            </thead>
-            <tbody>
-            {% for row in data %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ row[5] }}</td>
-                    <td>{{ row[6] }}</td>
-                    <td>{{ row[7] }}</td>
-                    <td>{{ row[8] }}</td>
-                    <td>{{ row[9] }}</td>
-                    <td>{{ row[10] }}</td>
-                    <td>{{ row[11] }}</td>
-                    <td>{{ row[12] }}</td>
-                    <td>{{ row[13] }}</td>
-                    <td>{{ row[14] }}</td>
-                    <td>{{ row[15] }}</td>
-                    <td>{{ row[16] }}</td>
-                    <td>{{ row[17] }}</td>
-                    <td>{{ row[18] }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% if data[0][1] == 'APPROVED' %} <!-- Check if the status is APPROVED -->
-            <form action="/graduate_student" method="post">
-                <input type="hidden" name="user_id" value="{{ data[0][0] }}">
-                <button type="submit">I am ready to Graduate</button>
+                </thead>
+                <tbody>
+                {% for row in data %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ row[5] }}</td>
+                        <td>{{ row[6] }}</td>
+                        <td>{{ row[7] }}</td>
+                        <td>{{ row[8] }}</td>
+                        <td>{{ row[9] }}</td>
+                        <td>{{ row[10] }}</td>
+                        <td>{{ row[11] }}</td>
+                        <td>{{ row[12] }}</td>
+                        <td>{{ row[13] }}</td>
+                        <td>{{ row[14] }}</td>
+                        <td>{{ row[15] }}</td>
+                        <td>{{ row[16] }}</td>
+                        <td>{{ row[17] }}</td>
+                        <td>{{ row[18] }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <!-- Check Audit Status Form -->
+            <form action="/check_audit_status" method="post">
+                <input type="text" name="user_id" placeholder="Enter your Student ID to check status" required>
+                <button type="submit">Check Status</button>
             </form>
+            {% if show_graduate_button %}
+        <form action="/graduate_student" method="post">
+            <input type="hidden" name="user_id" value="{{ data[0][0] }}">
+            <!-- assuming the user ID is in the first column of the first row -->
+            <button type="submit">I am ready to Graduate</button>
+        </form>
+            {% endif %}
+        {% else %}
+            <p>No data available. Please check the Student ID and Degree Program.</p>
         {% endif %}
-    {% else %}
-        <p>No data available. Please check the Student ID and Degree Program.</p>
-    {% endif %}
-</div>
+    </div>
 {% endblock %}

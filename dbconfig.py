@@ -1,7 +1,7 @@
 # Database connection parameters
 db_config = {
-    'dbname': 'starssdb',
+    'dbname': 'STARRS',
     'user': 'postgres',
-    'password': 'starss',
+    'password': 'Cosmopeepaws123',
     'host': 'localhost'
 }

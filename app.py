@@ -1,5 +1,4 @@
 import psycopg2
-
 import applicant_info
 import graduate_secretary
 import user
@@ -19,14 +18,17 @@ def index():
         return redirect('/login_redirect')
     return redirect('/login')
 
+
 @app.route('/login')
 def login():
     return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
     active_user.invalidate()
     return redirect('/')
+
 
 @app.route('/login2/<loginid>')
 def login2(loginid):
@@ -40,32 +42,39 @@ def login2(loginid):
 def login_redirect():
     return redirect(active_user.get_home())
 
+
 @app.route('/error')
 def error():
     return render_template('error.html')
+
 
 @app.route('/university_applications')
 def university_applications():
     return render_template('university_applications.html')
 
+
 @app.route('/course_registration')
 def course_registration():
     return render_template('course_registration.html')
+
 
 @app.route('/graduation_application')
 def graduation_application():
     return render_template('graduation_application.html')
 
+
 @app.route('/alumni_page')
 def alumni_page():
     return render_template('alumni_page.html')
 
+
 @app.route('/faculty/graduatesecretary')
 def faculty_gradsec():
-    if(active_user.isFaculty()):
+    if (active_user.isFaculty()):
         if active_user.get_graduate_secretary_status():
             return render_template('faculty_gs.html', gsrecords=active_user.gradsec.gs_records)
     return redirect('/error')
+
 
 @app.route('/faculty/update_admission/<admissionid>')
 def update_admission(admissionid):
@@ -79,6 +88,7 @@ def update_admission(admissionid):
             return render_template('faculty_gs_update_admission.html', admission_user=user_to_review)
     return redirect("/error")
 
+
 @app.route('/faculty/update_admission_submit', methods=['POST'])
 def update_admission_submit():
     if active_user.isFaculty():
@@ -88,9 +98,10 @@ def update_admission_submit():
             return redirect("/faculty/graduatesecretary")
     return redirect("/error")
 
+
 @app.route('/applicant/home')
 def applicant_home():
-    if(active_user.isApplicant()):
+    if (active_user.isApplicant()):
         if not active_user.applicantInfoExists():
             active_user.get_applicant_info()
         if active_user.submittedApplication():
@@ -100,16 +111,18 @@ def applicant_home():
     else:
         return redirect('/error')
 
+
 @app.route('/applicant/application')
 def applicant_application():
-    if(active_user.isApplicant()):
+    if (active_user.isApplicant()):
         if not active_user.submittedApplication():
             return render_template('applicant_application.html', applicantid=active_user.id)
     return redirect('/error')
 
+
 @app.route('/applicant/submit', methods=['POST'])
 def applicant_submit():
-    if(active_user.isApplicant()):
+    if (active_user.isApplicant()):
         if not active_user.submittedApplication():
             applicationform = request.form
             active_user.buildApplicantUser(applicationform)
@@ -118,11 +131,13 @@ def applicant_submit():
             return redirect('/applicant/success')
     return redirect('/error')
 
+
 @app.route('/applicant/success')
 def applicant_success():
-    if(active_user.isApplicant()):
+    if (active_user.isApplicant()):
         return render_template('applicant_success.html')
     return redirect('/error')
+
 
 @app.route('/graduate')
 def graduate_page():
@@ -139,7 +154,7 @@ def graduate_page():
         return jsonify({"error": str(e)})
 
 
-# 20240415-MB addition
+# 20240415-MB addition -- 20240421 notes: might not need this at all?? might be able to combine with audit below
 @app.route('/search_student', methods=['POST'])
 def search_student():
     user_id = request.form['user_id']  # from grad app student entry
@@ -168,23 +183,27 @@ def search_student():
         cur.close()
         conn.close()
 
+
 @app.route('/audit_student', methods=['POST'])
 def audit_student():
     user_id = request.form['user_id']
-    print("Received USER_ID:", user_id)  # Initial reception of USER_ID
+    degree_program = request.form['degree_program']
+    print("Received USER_ID:", user_id, degree_program)  # Initial reception of USER_ID
 
     try:
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
         errors = []
 
-        # First, check if the USER_ID exists at all
-        cur.execute('SELECT "USER_ID" FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s', (user_id,))
-        result = cur.fetchone()
-        print("User ID check:", result)  # Debug print
-        if not result:
-            flash("Not a valid USER_ID.", "error")
-            return render_template('graduation_application.html', data=[])
+        # First, verify the USER_ID and DEGREE_PROGRAM combination
+        cur.execute('SELECT * FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s AND "DEGREE_PROGRAM" = %s',
+                    (user_id, degree_program))
+        data = cur.fetchall()
+
+        if not data:
+            # No data found for the combination of USER_ID and DEGREE_PROGRAM
+            flash("Not a valid Student ID or you are not enrolled in this degree. Try again.", "error")
+            return render_template('graduation_application.html', data=None)
 
         # Check for total credit hours and GPA
         cur.execute('SELECT total_credit_hrs, gpa FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s', (user_id,))
@@ -226,12 +245,21 @@ def audit_student():
         # Ensure database update is outside the else condition
         try:
             cur.execute('UPDATE "starrs"."GRAD_APPLICATION" SET "STATUS" = %s WHERE "USER_ID" = %s', (status, user_id,))
+            cur.execute('UPDATE "starrs"."GRADUATE_STUDENT" SET "STATUS" = %s WHERE "USER_ID" = %s', (status, user_id,))
             conn.commit()
         except Exception as e:
             flash(f"An error occurred during database update: {e}", "error")
             conn.rollback()
 
-        return render_template('graduation_application.html', data=[])
+        # Fetch data to display
+        cur.execute('SELECT * FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s AND "DEGREE_PROGRAM" = %s',
+                    (user_id, degree_program))
+        data = cur.fetchall()
+        if data:
+            flash("Audit completed successfully. Your details are below.", "success")
+        else:
+            flash("No data found or audit failed. Please check the Student ID and Degree Program.", "error")
+            data = None
 
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
@@ -239,6 +267,8 @@ def audit_student():
     finally:
         cur.close()
         conn.close()
+
+    return render_template('graduation_application.html', data=data)
 
 
 # 20240417 - MB
@@ -390,6 +420,32 @@ def graduate_student():
     finally:
         cur.close()
         conn.close()
+@app.route('/check_audit_status', methods=['POST'])
+def check_audit_status():
+    user_id = request.form['user_id']
+    try:
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        # Fetch user's current audit status and necessary details
+        cur.execute('SELECT "USER_ID", "STATUS", "DEGREE_PROGRAM", "ADMITTED_SEMESTER", gpa, total_credit_hrs FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s', (user_id,))
+        data = cur.fetchall()  # fetchall to handle potentially multiple records
+
+        if not data:
+            flash("No record found for the given Student ID.", "error")
+            return render_template('graduation_application.html', data=[], show_graduate_button=False)
+
+        flash("Status fetched successfully.", "success")
+        # Check if any record has the status 'APPROVED' to determine if we show the graduate button
+        show_graduate_button = any(row[1] == 'APPROVED' for row in data)
+        return render_template('graduation_application.html', data=data, show_graduate_button=show_graduate_button)
+    except Exception as e:
+        flash(f"An error occurred while fetching the data: {e}", "error")
+        return render_template('graduation_application.html', data=[], show_graduate_button=False)
+    finally:
+        cur.close()
+        conn.close()
+
 
 @app.route('/test_db')
 def test_db():
@@ -403,6 +459,7 @@ def test_db():
         return jsonify({"success": True, "PostgresSQL Version": db_version})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
