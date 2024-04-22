@@ -169,7 +169,7 @@ function showReviewForm(ADMISSION_ID) {
     reviewForm.innerHTML = `
         <h2>Review Form for Application ${ADMISSION_ID}</h2>
         <label for="reviewer_id">Reviewer ID:</label>
-        <input type="text" id="reviewer_id" name="reviewer_id" required><br>
+        <input type="text" id="reviewer_id" name="reviewer_id" value="{{activeuserid}}" required><br>
         <label for="ranking">Ranking/Recommendation:</label>
         <select id="ranking" name="ranking">
             <option value="1">Reject</option>
