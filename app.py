@@ -1,5 +1,6 @@
 import psycopg2
 
+import admission_review
 import applicant_info
 import graduate_secretary
 import user
@@ -137,7 +138,8 @@ def update_admission(admissionid):
             user_to_review = user.User()
             user_to_review.get_user_data_for_id(app_to_review.applicantid)
             user_to_review.applicantinfo.application = app_to_review
-            return render_template('faculty_gs_update_admission.html', admission_user=user_to_review)
+            committee_review = admission_review.get_review_for_admission(admissionid)
+            return render_template('faculty_gs_update_admission.html', admission_user=user_to_review, creview=committee_review)
     return redirect("/error")
 
 @app.route('/faculty/update_admission_submit', methods=['POST'])

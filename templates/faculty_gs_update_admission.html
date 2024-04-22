@@ -249,6 +249,30 @@
     </table>
     <hr>
     <h2>Administration</h2>
+    <p>Admission Committee Review:</p>
+        {% if creview is not none %}
+           <table rules="all">
+               <tr>
+                   <th>Reviewer ID</th>
+                   <th>Reviewer</th>
+                   <th>Comment</th>
+                   <th>Ranking</th>
+                   <th>Decision</th>
+                   <th>Committee ID</th>
+               </tr>
+               <tr>
+                   <td>{{creview.reviewer_id}}</td>
+                   <td>{{creview.reviewer_fname}}, {{creview.reviewer_lname}}</td>
+                   <td>{{creview.admission_comment}}</td>
+                   <td>{{creview.get_ranking_string()}}</td>
+                   <td>{{creview.admission_decision}}</td>
+                   <td>{{creview.committee_id}}</td>
+               </tr>
+           </table>
+        {% else %}
+            <p>--Not Yet Reviewed--</p>
+        {% endif %}
+    <br/>
     <table>
         <tr>
             <td>Transcript Received:</td>
