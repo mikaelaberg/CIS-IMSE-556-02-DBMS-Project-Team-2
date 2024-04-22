@@ -23,12 +23,10 @@ class GraduateSecretary:
                         [self.faculty_id])
             gs_records = cur.fetchall()
             if gs_records is not None:
-                success = self.build_gs_record_array(gs_records)
-            else:
-                success = False
+                self.build_gs_record_array(gs_records)
             cur.close()
             conn.close()
-            return success
+            return True
         except Exception as e:
             return False
 

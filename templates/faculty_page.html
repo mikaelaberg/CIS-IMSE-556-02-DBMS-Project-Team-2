@@ -57,7 +57,7 @@
 {% block content %}
 <div class="main-content">
     <h1>Faculty Review Portal</h1>
-
+    <table>
     <!-- Display flash messages -->
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
@@ -66,31 +66,37 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-
-    <table>
-        <thead>
-        <tr>
-            <th>User ID</th>
-            <th>Status</th>
-            <th>Degree Program</th>
-            <th>Admitted Semester</th>
-            <th>GPA</th>
-            <th>Total Credit Hours</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for student in students %}
+    <tr><td>
+        <h2>Graduation Review</h2>
+        <table>
+            <thead>
             <tr>
-                <td>{{ student[0] }}</td>
-                <td>{{ student[1] }}</td>
-                <td>{{ student[2] }}</td>
-                <td>{{ student[3] }}</td>
-                <td>{{ student[4] }}</td>
-                <td>{{ student[5] }}</td>
+                <th>User ID</th>
+                <th>Status</th>
+                <th>Degree Program</th>
+                <th>Admitted Semester</th>
+                <th>GPA</th>
+                <th>Total Credit Hours</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for student in students %}
+                <tr>
+                    <td>{{ student[0] }}</td>
+                    <td>{{ student[1] }}</td>
+                    <td>{{ student[2] }}</td>
+                    <td>{{ student[3] }}</td>
+                    <td>{{ student[4] }}</td>
+                    <td>{{ student[5] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+
+    <tr><td>
+    <h2>Graduation Actions</h2>
     <form action="/submit_faculty_decision" method="post">
     <input type="text" name="faculty_id" placeholder="Enter your Faculty ID" required>
     <input type="text" name="student_id" placeholder="Enter Student ID" required>
@@ -100,19 +106,38 @@
         <option value="DENIED">DENIED</option>
     </select>
     <button type="submit">Submit Decision</button>
-</form>
-</div>
-<a href="/student_academic_management" style="background-color: #007bff; color: #fff; padding: 20px 40px; font-size: 24px; border: none; border-radius: 10px; cursor: pointer; transition: background-color 0.3s; text-decoration: none;">Student Academic Management</a>
-<div class="container">
-    <h1>Admission Review</h1>
-    <div id="pendingApplications">
-        <!-- List of pending applications will be displayed here -->
-    </div>
-    <div id="reviewForm" style="display: none;">
-        <!-- Review form for selected application will be displayed here -->
-    </div>
-</div>
+    </form>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
 
+    <tr><td>
+        <h2>Academics Management</h2>
+        <a href="/student_academic_management" style="background-color: #007bff; color: #fff; padding: 20px 40px; font-size: 24px; border: none; border-radius: 10px; cursor: pointer; transition: background-color 0.3s; text-decoration: none;">Student Academic Management</a>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+
+{% if activeuserid == '600000' %}
+    <tr><td>
+        <div>
+            <h2>Graduate Secretary Duties</h2>
+            <p><a href="/faculty/graduatesecretary">Review Pending Applications</a></p>
+        </div>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+{% endif %}
+    <tr><td>
+        <div class="container">
+            <h2>Admission Review</h2>
+            <div id="pendingApplications">
+                <!-- List of pending applications will be displayed here -->
+            </div>
+            <div id="reviewForm" style="display: none;">
+                <!-- Review form for selected application will be displayed here -->
+            </div>
+        </div>
+    </td></tr>
+</table>
+</div>
 <script>
 // Define pendingApplications array in the global scope
 let pendingApplications = [];
@@ -129,7 +154,7 @@ function fetchPendingApplications() {
         pendingApplications.forEach(application => {
             const applicationItem = document.createElement('div');
             applicationItem.classList.add('application-item');
-            applicationItem.innerHTML = `<button onclick="showReviewForm('${application}')">${application}</button>`;
+            applicationItem.innerHTML = `<button onclick="showReviewForm('${application}')">Application #${application}</button>`;
             pendingList.appendChild(applicationItem);
         });
     })

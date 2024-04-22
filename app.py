@@ -24,7 +24,8 @@ def get_pending_applications():
         cursor.execute('''
             SELECT "ADMISSION_ID" 
             FROM starrs."ADMISSION" 
-            WHERE "ADMISSION_ID" NOT IN (
+            WHERE "ADMISSION_STATUS" = 'Complete' AND 
+            "ADMISSION_ID" NOT IN (
                 SELECT "ADMISSION_ID" 
                 FROM starrs."ADMISSION_REVIEW"
             )
@@ -343,10 +344,10 @@ def faculty_page():
         students = cur.fetchall()  # Fetches all students in WAITING status
         cur.close()
         conn.close()
-        return render_template('faculty_page.html', students=students)
+        return render_template('faculty_page.html', students=students, activeuserid=active_user.id)
     except Exception as e:
         print(f"An error occurred: {e}")
-        return render_template('faculty_page.html', students=[])
+        return render_template('faculty_page.html', students=[], activeuserid=active_user.id)
 
 
 @app.route('/submit_faculty_decision', methods=['POST'])

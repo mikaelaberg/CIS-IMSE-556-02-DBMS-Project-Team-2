@@ -247,8 +247,16 @@
         {% endfor %}
 
     </table>
+    <hr>
     <h2>Administration</h2>
     <table>
+        <tr>
+            <td>Transcript Received:</td>
+            <td></td>
+            <td><input type="checkbox" name="transcriptreceived" id="transcriptreceivedbox" />
+            <input type="hidden" id="transcriptreceivedid" value="{{admission_user.applicantinfo.application.transcript_received}}" /></td>
+        </tr>
+        <tr><td><br/></td></tr>
         <tr>
             <td>Status:</td>
             <td></td>
@@ -262,12 +270,6 @@
             </td>
         </tr>
         <tr><td><br/></td></tr>
-        <tr>
-            <td>Transcript Received:</td>
-            <td></td>
-            <td><input type="checkbox" name="transcriptreceived" id="transcriptreceivedbox" />
-            <input type="hidden" id="transcriptreceivedid" value="{{admission_user.applicantinfo.application.transcript_received}}" /></td>
-        </tr>
         <tr>
             <td></td>
             <td></td>
