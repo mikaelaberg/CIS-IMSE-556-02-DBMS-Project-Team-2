@@ -1,6 +1,4 @@
 import psycopg2
-
-import admission_review
 import applicant_info
 import graduate_secretary
 import user
@@ -13,10 +11,6 @@ from flask import Flask, render_template, jsonify, session, redirect, request, f
 app = Flask(__name__)
 active_user = user.User()
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
-
-
-
-
 
 def get_pending_applications():
     try:
@@ -61,7 +55,7 @@ def submit_review():
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\", \"ADVISOR\") VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\") VALUES (%s, %s, %s, %s, %s, %s)",
             (reviewer_id, admission_id, comments, ranking, decision, committee_id, advisor))
         cur.execute(
             "UPDATE starrs.\"ADMISSION\" SET \"ADMISSION_COMMENT\" = %s, \"ADMISSION_RANKING\" = %s, \"COMMITTEE_DECISION\" = %s, \"RECOMMENDED_ADVISOR\" = %s WHERE \"ADMISSION_ID\" = %s",
@@ -637,7 +631,7 @@ def enroll_course():
         # Insert enrollment data into the ATTENDS_SECTION table
         cur.execute("""
             INSERT INTO starrs."ATTENDS_SECTION" (
-                "STUDENT_ID", "COURSE_NO", "SECTION_NO", "SEMESTER", "YEAR", "Grade", "Registration Status")
+                "USER_ID", "COURSE_NO", "SECTION_NO", "SEMESTER", "YEAR", "GRADE", "REGISTRATION STATUS")
             VALUES (%s, %s, %s, %s, %s, NULL, 'Registered')
         """, (student_id, course_no, section_no, semester, year))
 
@@ -679,7 +673,7 @@ def drop_course():
 
         cur.execute("""
             DELETE FROM starrs."ATTENDS_SECTION"
-            WHERE "STUDENT_ID" = %s AND "SECTION_NO" = %s AND "SEMESTER" = %s AND "YEAR" = %s AND "INSTRUCTOR_ID" = %s
+            WHERE "USER_ID" = %s AND "SECTION_NO" = %s AND "SEMESTER" = %s AND "YEAR" = %s
             RETURNING 1
             """,
                     (user_id, section_no, semester, year, instructor_id))
@@ -822,7 +816,7 @@ def search_student_academic_records():
                 INNER JOIN starrs."SECTION" s ON a."SECTION_NO" = s."SECTION_NO"
                 INNER JOIN starrs."COURSE" c ON s."COURSE_NO" = c."COURSE_NO"
                 INNER JOIN starrs."USER" u ON s."INSTRUCTOR_ID" = u."USER_ID"
-                WHERE a."STUDENT_ID" = %s AND a."COURSE_NO" = %s
+                WHERE a."USER_ID" = %s AND a."COURSE_NO" = %s
             """
 
             cur.execute(attend_section_query, (student_id, course_no))
@@ -874,8 +868,8 @@ def update_record():
                 # Update the record in the database
                 cur.execute("""
                     UPDATE starrs."ATTENDS_SECTION"
-                    SET "Grade" = %s, "Registration Status" = %s
-                    WHERE "STUDENT_ID" = %s AND "COURSE_NO" = %s AND "SECTION_NO" = %s
+                    SET "GRADE" = %s, "REGISTRATION STATUS" = %s
+                    WHERE "GRADE" = %s AND "COURSE_NO" = %s AND "SECTION_NO" = %s
                 """, (value, registration_status, student_id, course_no, section_no))
 
                 print("Record updated successfully.")
