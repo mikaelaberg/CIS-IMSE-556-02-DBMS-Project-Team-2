@@ -1,14 +1,63 @@
 <!DOCTYPE html>
-<!-- templates/index.html -->
+<!-- templates/faculty_page.html -->
 <html lang="en">
 {% extends 'layout2.html' %}
 
-{% block title %}Main Page{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Faculty Page{% endblock %}</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #pendingApplications, #reviewForm {
+            margin-top: 20px;
+        }
+
+        #reviewForm label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        #reviewForm textarea {
+            width: 100%;
+            height: 100px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
 
 {% block content %}
 <div class="main-content">
     <h1>Faculty Review Portal</h1>
-
+    <table>
     <!-- Display flash messages -->
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
@@ -17,31 +66,37 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-
-    <table>
-        <thead>
-        <tr>
-            <th>User ID</th>
-            <th>Status</th>
-            <th>Degree Program</th>
-            <th>Admitted Semester</th>
-            <th>GPA</th>
-            <th>Total Credit Hours</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for student in students %}
+    <tr><td>
+        <h2>Graduation Review</h2>
+        <table>
+            <thead>
             <tr>
-                <td>{{ student[0] }}</td>
-                <td>{{ student[1] }}</td>
-                <td>{{ student[2] }}</td>
-                <td>{{ student[3] }}</td>
-                <td>{{ student[4] }}</td>
-                <td>{{ student[5] }}</td>
+                <th>User ID</th>
+                <th>Status</th>
+                <th>Degree Program</th>
+                <th>Admitted Semester</th>
+                <th>GPA</th>
+                <th>Total Credit Hours</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for student in students %}
+                <tr>
+                    <td>{{ student[0] }}</td>
+                    <td>{{ student[1] }}</td>
+                    <td>{{ student[2] }}</td>
+                    <td>{{ student[3] }}</td>
+                    <td>{{ student[4] }}</td>
+                    <td>{{ student[5] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+
+    <tr><td>
+    <h2>Graduation Actions</h2>
     <form action="/submit_faculty_decision" method="post">
     <input type="text" name="faculty_id" placeholder="Enter your Faculty ID" required>
     <input type="text" name="student_id" placeholder="Enter Student ID" required>
@@ -51,7 +106,158 @@
         <option value="DENIED">DENIED</option>
     </select>
     <button type="submit">Submit Decision</button>
-</form>
+    </form>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+
+    <tr><td>
+        <h2>Academics Management</h2>
+        <a href="/student_academic_management" style="background-color: #007bff; color: #fff; padding: 20px 40px; font-size: 24px; border: none; border-radius: 10px; cursor: pointer; transition: background-color 0.3s; text-decoration: none;">Student Academic Management</a>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+
+{% if activeuserid == '600000' %}
+    <tr><td>
+        <div>
+            <h2>Graduate Secretary Duties</h2>
+            <p><a href="/faculty/graduatesecretary">Review Pending Applications</a></p>
+        </div>
+    </td></tr>
+    <tr><td><br/><hr></td></tr>
+{% endif %}
+    <tr><td>
+        <div class="container">
+            <h2>Admission Review</h2>
+            <div id="pendingApplications">
+                <!-- List of pending applications will be displayed here -->
+            </div>
+            <div id="reviewForm" style="display: none;">
+                <!-- Review form for selected application will be displayed here -->
+            </div>
+        </div>
+    </td></tr>
+</table>
 </div>
+<script>
+// Define pendingApplications array in the global scope
+let pendingApplications = [];
+
+// Function to display pending applications
+function fetchPendingApplications() {
+    fetch('/pending_applications')
+    .then(response => response.json())
+    .then(data => {
+        pendingApplications = data.pendingApplications; // Update pendingApplications array
+        const pendingList = document.getElementById('pendingApplications');
+        pendingList.innerHTML = ''; // Clear existing list
+
+        pendingApplications.forEach(application => {
+            const applicationItem = document.createElement('div');
+            applicationItem.classList.add('application-item');
+            applicationItem.innerHTML = `<button onclick="showReviewForm('${application}')">Application #${application}</button>`;
+            pendingList.appendChild(applicationItem);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching pending applications:', error);
+    });
+}
+
+// Function to show review form for selected application
+function showReviewForm(ADMISSION_ID) {
+    const reviewForm = document.getElementById('reviewForm');
+    reviewForm.innerHTML = `
+        <h2>Review Form for Application ${ADMISSION_ID}</h2>
+        <label for="reviewer_id">Reviewer ID:</label>
+        <input type="text" id="reviewer_id" name="reviewer_id" value="{{activeuserid}}" required><br>
+        <label for="ranking">Ranking/Recommendation:</label>
+        <select id="ranking" name="ranking">
+            <option value="1">Reject</option>
+            <option value="2">Borderline</option>
+            <option value="3">Admit without Aid</option>
+            <option value="4">Admit with Aid</option>
+        </select><br>
+        <label for="comments">Comments:</label>
+        <textarea id="comments" name="comments" placeholder="Enter comments (max 100 characters)"></textarea>
+        <label for="decision">Committee Decision:</label>
+        <select id="decision" name="decision">
+            <option value="Admit">Admit</option>
+            <option value="Reject">Reject</option>
+        </select><br>
+        <label for="committee_id">Committee ID:</label>
+        <input type="text" id="committee_id" name="committee_id" required><br>
+        <label for="advisor">Advisor (if admitted):</label>
+        <input type="text" id="advisor" name="advisor" placeholder="Enter advisor's name">
+        <div class="button-container">
+            <button onclick="submitReview('${ADMISSION_ID}')">Submit Review</button>
+        </div>
+    `;
+
+    reviewForm.style.display = 'block';
+}
+// Function to update the display of pending applications
+function updatePendingApplicationsList() {
+    const pendingList = document.getElementById('pendingApplications');
+    pendingList.innerHTML = ''; // Clear existing list
+
+    pendingApplications.forEach(application => {
+        const applicationItem = document.createElement('div');
+        applicationItem.classList.add('application-item');
+        applicationItem.innerHTML = `<button onclick="showReviewForm('${application}')">${application}</button>`;
+        pendingList.appendChild(applicationItem);
+    });
+}
+// Function to submit review
+function submitReview(ADMISSION_ID) {
+    const reviewer_id = document.getElementById('reviewer_id').value;
+    const ranking = document.getElementById('ranking').value;
+    const comments = document.getElementById('comments').value;
+    const decision = document.getElementById('decision').value;
+    const committee_id = document.getElementById('committee_id').value;
+    const advisor = document.getElementById('advisor').value;
+
+    const data = {
+        admission_id: ADMISSION_ID,
+        reviewer_id: reviewer_id,
+        ranking: ranking,
+        comments: comments,
+        decision: decision,
+        committee_id: committee_id,
+        advisor: advisor
+    };
+
+    fetch('/submit_review', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (response.ok) {
+            // If the response is successful, remove the application from the list
+            const index = pendingApplications.findIndex(app => app === ADMISSION_ID);
+            if (index !== -1) {
+                pendingApplications.splice(index, 1);
+            }
+            // Update the display to remove the reviewed application
+            updatePendingApplicationsList();
+
+            // Hide review form after submission
+            document.getElementById('reviewForm').style.display = 'none';
+        } else {
+            throw new Error('Failed to submit review');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting review:', error);
+    });
+      return false;
+}
+
+// Display pending applications on page load
+window.onload = fetchPendingApplications;
+
+</script>
 {% endblock %}
 </html>

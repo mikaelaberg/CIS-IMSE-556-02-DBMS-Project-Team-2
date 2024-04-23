@@ -1,16 +1,79 @@
 import psycopg2
+
+import admission_review
 import applicant_info
 import graduate_secretary
 import user
 import sys
+import traceback
 from datetime import datetime
 from dbconfig import db_config
-from flask import Flask, render_template, jsonify, redirect, request, flash, url_for
+from flask import Flask, render_template, jsonify, session, redirect, request, flash, url_for
 
 app = Flask(__name__)
 active_user = user.User()
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
 
+
+
+
+
+def get_pending_applications():
+    try:
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT "ADMISSION_ID" 
+            FROM starrs."ADMISSION" 
+            WHERE "ADMISSION_STATUS" = 'Complete' AND 
+            "ADMISSION_ID" NOT IN (
+                SELECT "ADMISSION_ID" 
+                FROM starrs."ADMISSION_REVIEW"
+            )
+        ''')
+        pending_applications = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return pending_applications
+    except psycopg2.Error as e:
+        print("Error retrieving pending applications:", e)
+        return []
+
+
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    data = request.get_json()
+    print("Received data:", data)
+    # Extract data from the request
+
+    reviewer_id = data['reviewer_id']
+    admission_id = data['admission_id']
+    ranking = data['ranking']
+    comments = data['comments']
+    decision = data['decision']
+    committee_id = data['committee_id']
+    advisor: object = data['advisor']
+    print("Extracted data:", reviewer_id, admission_id, ranking, comments, decision, committee_id,advisor)
+
+    # Insert the data into the database
+    try:
+        # Insert the data into the database
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\", \"ADVISOR\") VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (reviewer_id, admission_id, comments, ranking, decision, committee_id, advisor))
+        cur.execute(
+            "UPDATE starrs.\"ADMISSION\" SET \"ADMISSION_COMMENT\" = %s, \"ADMISSION_RANKING\" = %s, \"COMMITTEE_DECISION\" = %s, \"RECOMMENDED_ADVISOR\" = %s WHERE \"ADMISSION_ID\" = %s",
+            (comments, ranking, decision, advisor, admission_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Review submitted successfully")
+        return jsonify({'success': True, 'message': 'Review submitted successfully'})
+    except Exception as e:
+        print("Error submitting review:", e)
+        return jsonify({'success': False, 'message': f'Error submitting review: {str(e)}'})
 
 @app.route('/')
 def index():
@@ -41,7 +104,6 @@ def login2(loginid):
 @app.route('/login_redirect')
 def login_redirect():
     return redirect(active_user.get_home())
-
 
 @app.route('/error')
 def error():
@@ -85,7 +147,8 @@ def update_admission(admissionid):
             user_to_review = user.User()
             user_to_review.get_user_data_for_id(app_to_review.applicantid)
             user_to_review.applicantinfo.application = app_to_review
-            return render_template('faculty_gs_update_admission.html', admission_user=user_to_review)
+            committee_review = admission_review.get_review_for_admission(admissionid)
+            return render_template('faculty_gs_update_admission.html', admission_user=user_to_review, creview=committee_review)
     return redirect("/error")
 
 
@@ -136,6 +199,26 @@ def applicant_submit():
 def applicant_success():
     if (active_user.isApplicant()):
         return render_template('applicant_success.html')
+    return redirect('/error')
+
+
+@app.route('/applicant/status')
+def applicant_status():
+    if(active_user.isApplicant()):
+        active_user.applicantinfo.applicantId = active_user.id
+        active_user.applicantinfo.get_application_status()
+        return render_template('applicant_status.html', appstatus=active_user.applicantinfo.status)
+    return redirect('/error')
+
+
+@app.route('/applicant/enroll')
+def applicant_enroll():
+    if(active_user.isApplicant()):
+        if not active_user.applicantInfoExists():
+            active_user.get_applicant_info()
+        if(active_user.enroll()):
+            relogin = '/login2/' + active_user.id
+            return redirect(relogin)
     return redirect('/error')
 
 
@@ -274,6 +357,12 @@ def audit_student():
 # 20240417 - MB
 
 # Ensure this is the only place where '/faculty' route is defined
+
+@app.route('/pending_applications')
+def pending_applications():
+    pendingApplications = get_pending_applications()
+    return jsonify(pendingApplications=pendingApplications)
+
 @app.route('/faculty')
 def faculty_page():
     try:
@@ -286,10 +375,10 @@ def faculty_page():
         students = cur.fetchall()  # Fetches all students in WAITING status
         cur.close()
         conn.close()
-        return render_template('faculty_page.html', students=students)
+        return render_template('faculty_page.html', students=students, activeuserid=active_user.id)
     except Exception as e:
         print(f"An error occurred: {e}")
-        return render_template('faculty_page.html', students=[])
+        return render_template('faculty_page.html', students=[], activeuserid=active_user.id)
 
 
 @app.route('/submit_faculty_decision', methods=['POST'])
@@ -447,6 +536,368 @@ def check_audit_status():
         conn.close()
 
 
+@app.route('/submit_course_registration', methods=['POST'])
+def submit_course_registration():
+    try:
+        # Access form data
+        course_no = request.form['course_no']
+        course_title = request.form['course_title']
+        semester = request.form['semester']
+        year = request.form['year']
+        department = request.form['department']
+
+        # Initialize the SQL query to fetch courses
+        course_query = "SELECT * FROM starrs.\"COURSE\" WHERE 1=1"
+
+        # Add conditions based on form inputs
+        if course_no:
+            course_query += f" AND \"COURSE_NO\" = '{course_no}'"
+        if course_title:
+            course_query += f" AND \"TITLE\" = '{course_title}'"
+        if department != 'Any':
+            course_query += f" AND \"DEPARTMENT\" = '{department}'"
+
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        # Execute the SQL query to fetch courses
+        cur.execute(course_query)
+        courses = cur.fetchall()
+
+        course_info = []
+        for course in courses:
+            course_sections_query = f"""
+                SELECT
+                    s.*,
+                    u."FIRST_NAME",
+                    u."LAST_NAME",
+                    EXISTS (
+                        SELECT 1
+                        FROM starrs."ATTENDS_SECTION" a
+                        WHERE
+                            a."STUDENT_ID" = %s
+                            AND a."SECTION_NO" = s."SECTION_NO"
+                            AND a."SEMESTER" = s."SEMESTER"
+                            AND a."YEAR" = s."YEAR"
+                    ) AS "enrolled"
+                FROM
+                    starrs."SECTION" s
+                INNER JOIN
+                    starrs."USER" u ON s."INSTRUCTOR_ID" = u."USER_ID"
+                WHERE
+                    s."COURSE_NO" = '{course[0]}'"""
+
+            # Add conditions for semester and year
+            if semester != 'Any':
+                course_sections_query += f" AND s.\"SEMESTER\" = '{semester}'"
+                if year != 'Any':
+                    course_sections_query += f" AND s.\"YEAR\" = '{year}'"
+            else:
+                if year != 'Any':
+                    course_sections_query += f" AND s.\"YEAR\" = '{year}'"
+
+            cur.execute(course_sections_query, (session.get('user_id'),))  # Pass user_id as parameter
+            sections = cur.fetchall()
+            course_info.append((course, sections))
+
+        # Render the template with the course information
+        return render_template('course_results.html', course_info=course_info)
+    except psycopg2.Error as e:
+        # Print the error message and traceback for debugging
+        print("Error executing SQL query:", e)
+        traceback.print_exc()
+        # Optionally, render an error page with a user-friendly message
+        return render_template('error.html', message="An error occurred while fetching course information.")
+
+# Course Enrollment------------------------------------------------------------------------------------------
+
+@app.route('/enroll_course', methods=['POST'])
+def enroll_course():
+    try:
+        # Access form data from the request object
+        student_id = session.get('user_id')  # Get student ID from session
+        course_no = request.form['course_no']
+        section_no = request.form['section_no']
+        semester = request.form['semester']
+        year = request.form['year']
+        instructor_id = request.form['instructor_id']  # Added instructor ID
+
+        # Print the enrolled course information
+        print("Enrolled Course Information:")
+        print("Student ID:", student_id)
+        print("Course Number:", course_no)
+        print("Section Number:", section_no)
+        print("Semester:", semester)
+        print("Year:", year)
+
+        # Establish connection to the database
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        # Insert enrollment data into the ATTENDS_SECTION table
+        cur.execute("""
+            INSERT INTO starrs."ATTENDS_SECTION" (
+                "STUDENT_ID", "COURSE_NO", "SECTION_NO", "SEMESTER", "YEAR", "Grade", "Registration Status")
+            VALUES (%s, %s, %s, %s, %s, NULL, 'Registered')
+        """, (student_id, course_no, section_no, semester, year))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close cursor and connection
+        cur.close()
+        conn.close()
+
+        # Return a success response
+        return jsonify({'message': 'Enrollment successful'})
+
+    except Exception as e:
+        # Handle exceptions
+        print("Error:", e)
+        # Rollback the transaction in case of an error
+        conn.rollback()  # Added rollback
+        # Optionally, return an error response
+        return jsonify({'error': 'Enrollment failed'}), 500
+
+@app.route('/drop_course', methods=['POST'])
+def drop_course():
+    try:
+        # Access form data
+        course_no = request.form['course_no']
+        section_no = request.form['section_no']
+        semester = request.form['semester']
+        year = request.form['year']
+        instructor_id = request.form['instructor_id']
+
+        # Check if the section is enrolled for the user ID in the ATTENDS_SECTION table
+        user_id = session.get('user_id')
+        if not user_id:
+            return render_template('error.html', message="User ID not found in session.")
+
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        cur.execute("""
+            DELETE FROM starrs."ATTENDS_SECTION"
+            WHERE "STUDENT_ID" = %s AND "SECTION_NO" = %s AND "SEMESTER" = %s AND "YEAR" = %s AND "INSTRUCTOR_ID" = %s
+            RETURNING 1
+            """,
+                    (user_id, section_no, semester, year, instructor_id))
+        deleted = cur.fetchone()
+
+        # If the record is deleted successfully, return a success message
+        if deleted:
+            return jsonify({'message': 'Course dropped successfully'})
+
+        # If the record does not exist, return an error message
+        else:
+            return jsonify({'error': 'Course not found or not enrolled'}), 404
+
+    except Exception as e:
+        # Handle exceptions
+        print("Error:", e)
+        # Optionally, return an error response
+        return jsonify({'error': 'Failed to drop course'}), 500
+
+    finally:
+        # Close database connection
+        cur.close()
+        conn.close()
+
+# Registration Record--------------------------------------------------------------------------------------------------------------
+#
+
+@app.route('/search_attendance_records', methods=['POST'])
+def search_attendance_records():
+    try:
+        # Access user ID from session
+        user_id = session.get('user_id')
+        if not user_id:
+            return render_template('error.html', message="Unable to recognize ID.")
+
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        # Fetch user information from the database
+        user_query = f"""
+            SELECT "USER_ID", "FIRST_NAME", "MIDDLE_NAME", "LAST_NAME", "EMAIL", "STREET_ADDRESS", "CITY", "STATE", "COUNTRY", "ZIP_CODE", "CELL_PHONE","WORK_PHONE"     
+            FROM starrs."USER"
+            WHERE "USER_ID" = '{user_id}'
+        """
+
+        cur.execute(user_query)
+        user_data = cur.fetchone()
+
+        # Fetch records from AttendSection table for the user ID
+        attend_section_query = f"""
+            SELECT a.*, c."COURSE_NO", c."TITLE", c."CREDITS", c."DEPARTMENT", s."SECTION_NO", s."SEMESTER", s."YEAR"
+            FROM starrs."ATTENDS_SECTION" a
+            INNER JOIN starrs."SECTION" s ON a."SECTION_NO" = s."SECTION_NO"
+            INNER JOIN starrs."COURSE" c ON s."COURSE_NO" = c."COURSE_NO"
+            WHERE a."STUDENT_ID" = '{user_id}'
+        """
+
+        cur.execute(attend_section_query)
+        records = cur.fetchall()
+
+        # Render the template with the fetched records and user information
+        return render_template('registration_record.html', records=records, user=user_data)
+
+    except psycopg2.Error as e:
+        # Handle database errors
+        print("Error executing SQL query:", e)
+        traceback.print_exc()
+        return render_template('error.html', message="An error occurred while fetching records.")
+
+    finally:
+        # Close database connection if applicable
+        pass  # Adjust this according to your database handling
+
+# GS/Faculty Grading--------------------------------------------------------------------------------------------------------------
+
+@app.route('/student_academic_management')
+def student_academic_management():
+    return render_template('student_academic_management.html')
+
+@app.route('/submit_student_academic', methods=['POST'])
+def submit_student_academic():
+    return render_template('student_academic_result.html')
+
+# @app.route('/search_student_academic_records', methods=['POST'])
+# def search_student_academic_records():
+#     try:
+#         # Access student ID and course number from the form data
+#         student_id = request.form.get('student_id')
+#         course_no = request.form.get('course_no')
+#
+#         if student_id and course_no:
+#             conn = psycopg2.connect(**db_config)
+#             cur = conn.cursor()
+#
+#             # Use parameterized query to prevent SQL injection
+#             attend_section_query = """
+#                 SELECT *
+#                 FROM starrs."ATTENDS_SECTION"
+#                 WHERE "STUDENT_ID" = %s AND "COURSE_NO" = %s
+#             """
+#
+#             cur.execute(attend_section_query, (student_id, course_no))
+#             records = cur.fetchall()
+#
+#             # Render the template with the fetched records
+#             return render_template('student_academic_result.html', records=records)
+#         else:
+#             # If student ID or course number is not provided, display an error message
+#             return render_template('student_academic_result.html', message="Please enter both student ID and course number.")
+#
+#     except psycopg2.Error as e:
+#         # Handle database errors
+#         print("Error executing SQL query:", e)
+#         traceback.print_exc()
+#         return render_template('error.html', message="An error occurred while fetching records.")
+#     finally:
+#         # Close cursor and connection
+#         if cur:
+#             cur.close()
+#         if conn:
+#             conn.close()
+#
+
+@app.route('/search_student_academic_records', methods=['POST'])
+def search_student_academic_records():
+    try:
+        # Access student ID and course number from the form data
+        student_id = request.form.get('student_id')
+        course_no = request.form.get('course_no')
+
+        if student_id and course_no:
+            conn = psycopg2.connect(**db_config)
+            cur = conn.cursor()
+
+            # Use parameterized query to prevent SQL injection
+            attend_section_query = """
+                SELECT a.*, c."COURSE_NO", c."TITLE", c."CREDITS", c."DEPARTMENT", s."SECTION_NO", s."SEMESTER", s."YEAR",
+                       u."FIRST_NAME" AS instructor_first_name, u."LAST_NAME" AS instructor_last_name
+                FROM starrs."ATTENDS_SECTION" a
+                INNER JOIN starrs."SECTION" s ON a."SECTION_NO" = s."SECTION_NO"
+                INNER JOIN starrs."COURSE" c ON s."COURSE_NO" = c."COURSE_NO"
+                INNER JOIN starrs."USER" u ON s."INSTRUCTOR_ID" = u."USER_ID"
+                WHERE a."STUDENT_ID" = %s AND a."COURSE_NO" = %s
+            """
+
+            cur.execute(attend_section_query, (student_id, course_no))
+            records = cur.fetchall()
+
+            # Render the template with the fetched records
+            return render_template('student_academic_result.html', records=records)
+        else:
+            # If student ID or course number is not provided, display an error message
+            return render_template('student_academic_result.html',
+                                   message="Please enter both student ID and course number.")
+
+    except psycopg2.Error as e:
+        # Handle database errors
+        print("Error executing SQL query:", e)
+        traceback.print_exc()
+        return render_template('error.html', message="An error occurred while fetching records.")
+    finally:
+        # Close cursor and connection
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+@app.route('/update_record', methods=['POST'])
+def update_record():
+    try:
+        # Establish connection to the database
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+
+        # Iterate over form data to update records
+        for key, value in request.form.items():
+            if key.startswith('grade_'):
+                student_id, course_no, section_no = key.split('_')
+                registration_status = request.form.get(f"status_{student_id}_{course_no}_{section_no}")
+
+                # Ensure NULL values for grade if not "completed" or "dropped" status
+                if registration_status not in ["completed", "dropped"]:
+                    value = None
+
+                print("Updating record with the following details:")
+                print("Student ID:", student_id)
+                print("Course Number:", course_no)
+                print("Section Number:", section_no)
+                print("Grade:", value)
+                print("Registration Status:", registration_status)
+
+                # Update the record in the database
+                cur.execute("""
+                    UPDATE starrs."ATTENDS_SECTION"
+                    SET "Grade" = %s, "Registration Status" = %s
+                    WHERE "STUDENT_ID" = %s AND "COURSE_NO" = %s AND "SECTION_NO" = %s
+                """, (value, registration_status, student_id, course_no, section_no))
+
+                print("Record updated successfully.")
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close cursor and connection
+        cur.close()
+        conn.close()
+
+        # Return a success response
+        return jsonify({'message': 'Records updated successfully'})
+
+    except Exception as e:
+        # Handle exceptions
+        print("Error:", e)
+        # Rollback the transaction in case of an error
+        conn.rollback()
+        # Optionally, return an error response
+        return jsonify({'error': 'Failed to update records'}), 500
+
 @app.route('/test_db')
 def test_db():
     try:
@@ -463,3 +914,5 @@ def test_db():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+

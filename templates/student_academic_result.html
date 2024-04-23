@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Academic Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function toggleGradeDropdown(studentId, courseId, sectionId) {
+            var registrationStatus = document.getElementById('status_' + studentId + '_' + courseId + '_' + sectionId).value;
+            var gradeDropdown = document.getElementById('grade_' + studentId + '_' + courseId + '_' + sectionId);
+            if (registrationStatus === 'Completed' || registrationStatus === 'Dropped') {
+                gradeDropdown.removeAttribute('disabled');
+            } else {
+                gradeDropdown.setAttribute('disabled', 'disabled');
+            }
+        }
+    </script>
+</head>
+<body>
+
+<h2>Student Academic Records</h2>
+
+{% if message %}
+<p>{{ message }}</p>
+{% else %}
+<form action="/update_record" method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Course Number</th>
+                <th>Section Number</th>
+                <th>Grade</th>
+                <th>Registration Status</th>
+                <th>Faculty Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+                <tr>
+                    <td>{{ record[0] }}</td>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] }}</td>
+                    <td>
+                        {{ record[5] }}
+                        <select id="grade_{{ record[0] }}_{{ record[1] }}_{{ record[2] }}" name="grade_{{ record[0] }}_{{ record[1] }}_{{ record[2] }}">
+                            {% for grade_option in ['0', '2', '2.3', '2.6', '3.0', '3.3', '3.6', '3.8', '4.0'] %}
+                                <option value="{{ grade_option }}" {% if record[3] == grade_option %} selected {% endif %}>{{ grade_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        {{ record[6] }}
+                        <select id="status_{{ record[0] }}_{{ record[1] }}_{{ record[2] }}" name="status_{{ record[0] }}_{{ record[1] }}_{{ record[2] }}" onchange="toggleGradeDropdown('{{ record[0] }}', '{{ record[1] }}', '{{ record[2] }}')">
+                            {% for status_option in ['Registered', 'Dropped', 'Waitlist', 'Completed', 'HOLD'] %}
+                                <option value="{{ status_option }}" {% if record[4] == status_option %} selected {% endif %}>{{ status_option }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>{{ record[14] }} {{ record[15] }}</td> <!-- Faculty Name -->
+                    <td>
+                        {% if current_user_id == record[16] %}
+                            <button type="submit" name="student_id" value="{{ record[0] }}">Update</button>
+                        {% else %}
+                            <button type="button" disabled>Edit</button>
+
+
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+{% endif %}
+
+</body>
+</html>

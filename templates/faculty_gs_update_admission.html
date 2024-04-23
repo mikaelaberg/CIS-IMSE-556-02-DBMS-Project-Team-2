@@ -247,8 +247,40 @@
         {% endfor %}
 
     </table>
+    <hr>
     <h2>Administration</h2>
+    <p>Admission Committee Review:</p>
+        {% if creview is not none %}
+           <table rules="all">
+               <tr>
+                   <th>Reviewer ID</th>
+                   <th>Reviewer</th>
+                   <th>Comment</th>
+                   <th>Ranking</th>
+                   <th>Decision</th>
+                   <th>Committee ID</th>
+               </tr>
+               <tr>
+                   <td>{{creview.reviewer_id}}</td>
+                   <td>{{creview.reviewer_fname}}, {{creview.reviewer_lname}}</td>
+                   <td>{{creview.admission_comment}}</td>
+                   <td>{{creview.get_ranking_string()}}</td>
+                   <td>{{creview.admission_decision}}</td>
+                   <td>{{creview.committee_id}}</td>
+               </tr>
+           </table>
+        {% else %}
+            <p>--Not Yet Reviewed--</p>
+        {% endif %}
+    <br/>
     <table>
+        <tr>
+            <td>Transcript Received:</td>
+            <td></td>
+            <td><input type="checkbox" name="transcriptreceived" id="transcriptreceivedbox" />
+            <input type="hidden" id="transcriptreceivedid" value="{{admission_user.applicantinfo.application.transcript_received}}" /></td>
+        </tr>
+        <tr><td><br/></td></tr>
         <tr>
             <td>Status:</td>
             <td></td>
@@ -262,12 +294,6 @@
             </td>
         </tr>
         <tr><td><br/></td></tr>
-        <tr>
-            <td>Transcript Received:</td>
-            <td></td>
-            <td><input type="checkbox" name="transcriptreceived" id="transcriptreceivedbox" />
-            <input type="hidden" id="transcriptreceivedid" value="{{admission_user.applicantinfo.application.transcript_received}}" /></td>
-        </tr>
         <tr>
             <td></td>
             <td></td>
