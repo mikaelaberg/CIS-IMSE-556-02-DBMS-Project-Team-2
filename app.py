@@ -120,7 +120,26 @@ def course_registration():
 
 @app.route('/graduation_application')
 def graduation_application():
-    return render_template('graduation_application.html')
+    user_id = "332233"
+
+    try:
+        conn = psycopg2.connect(**db_config)
+        cur = conn.cursor()
+        errors = []
+
+        # First, verify the USER_ID and DEGREE_PROGRAM combination
+        cur.execute("""SELECT * FROM "starrs"."GRADUATE_STUDENT_V" WHERE "USER_ID" = %s""", [user_id])
+        data = cur.fetchall()
+
+    except Exception as e:
+        flash(f"An error occurred: {e}", "error")
+        return render_template('graduation_application.html', data=[])
+    finally:
+        cur.close()
+        conn.close()
+
+    return render_template('graduation_application.html', data=data)
+
 
 
 @app.route('/alumni_page')
