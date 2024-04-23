@@ -42,6 +42,9 @@
         }
     </style>
 </head>
+{% extends 'layout_gradstd.html' %}
+
+{% block content %}
 <body>
 
 <h2>Student Transcript</h2>
@@ -100,14 +103,6 @@
                     <td>{{ record[1] }}</td>
                     <td>{{ record[2] }}</td>
                     <td>
-                        {% set grade = record[5] %}
-                        {% if grade is none and record[6] %}
-                            {# Do not display anything for null grades with a registration status #}
-                        {% else %}
-                            {{ grade }}
-                        {% endif %}
-                    </td>
-                    <td>
                         {% set GPA = record[5] %}
                         {% if GPA is none and record[6] %}
                         {% elif GPA >= 4.0 %}
@@ -130,6 +125,14 @@
                             F
                         {% endif %}
                     </td>
+                    <td>
+                        {% set grade = record[5] %}
+                        {% if grade is none and record[6] %}
+                            {# Do not display anything for null grades with a registration status #}
+                        {% else %}
+                            {{ grade }}
+                        {% endif %}
+                    </td>
                     <td>{{ record[6] }}</td>
                     <td>{{ record[3] }}</td>
                     <td>{{ record[4] }}</td>
@@ -142,4 +145,5 @@
 {% endif %}
 
 </body>
+{% endblock %}
 </html>

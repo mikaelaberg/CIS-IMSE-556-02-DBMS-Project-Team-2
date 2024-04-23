@@ -1,15 +1,135 @@
+
 <!DOCTYPE html>
-<!-- templates/index.html -->
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Transcript</title>
+
+</head>
 {% extends 'layout2.html' %}
 
-{% block title %}Main Page{% endblock %}
-
 {% block content %}
-<div class="main-content">
-    <h1>Welcome to the University Portal</h1>
-    <p>Select an option from the menu to get started.</p>
-</div>
+<body>
 
+<h2>Alumni Transcript for {{ userdetails.alumni_id }}</h2>
+
+{% if userdetails %}
+    <div class="user-info">
+        <h3>Student Information</h3>
+        <table>
+            <tr>
+                <td>User ID:</td>
+                <td>{{ userdetails.alumni_id }}</td>
+            </tr>
+            <tr>
+                <td>Full Name:</td>
+                <td>{{ userdetails.fname }} {{ userdetails.mname }} {{ userdetails.lname }}</td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td>{{ userdetails.email }}</td>
+            </tr>
+            <tr>
+                <td>Address:</td>
+                <td>{{ userdetails.street }}, {{ userdetails.city }}, {{ userdetails.state }}, {{ userdetails.country }} {{ userdetails.zip }}</td>
+            </tr>
+            <tr>
+                <td>Phone (Home):</td>
+                <td>{{ userdetails.homephone }}</td>
+            </tr>
+            <tr>
+                <td>Phone (Cell):</td>
+                <td>{{ userdetails.cell_phone }}</td>
+            </tr>
+            <tr>
+                <td>Phone (Work):</td>
+                <td>{{ userdetails.workphone }}</td>
+            </tr>
+        </table>
+        <hr>
+        <h3>Graduation Information</h3>
+        <table>
+            <tr>
+                <td>Degree Program:</td>
+                <td>{{ userdetails.degree }}</td>
+            </tr>
+            <tr>
+                <td>Graduation Year</td>
+                <td>{{ userdetails.gradyear }}</td>
+            </tr>
+            <tr>
+                <td>Student GPA</td>
+                <td>{{ userdetails.calculatedGPA() }}</td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+{% endif %}
+
+<h3 class="Academic Record">Course Records</h3>
+{% if userdetails.records %}
+    <table>
+        <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Course Number</th>
+                <th>Section Number</th>
+                <th>Grade</th>
+                <th>GPA</th>
+                <th>Registration Status</th>
+                <th>Semester</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+                <tr>
+                    <td>{{ record.title }}</td>
+                    <td>{{ record.course_no }}</td>
+                    <td>{{ record.section_no }}</td>
+                    <td>
+                        {% set GPA = record.grade %}
+                        {% if GPA is none and record.rstatus %}
+                        {% elif GPA >= 4.0 %}
+                            A
+                        {% elif GPA >= 3.8 %}
+                            A-
+                        {% elif GPA >= 3.6 %}
+                            B+
+                        {% elif GPA >= 3.3 %}
+                            B
+                        {% elif GPA >= 3.0 %}
+                            B-
+                        {% elif GPA >= 2.5 %}
+                            C+
+                        {% elif GPA >= 2.3 %}
+                            C
+                        {% elif GPA >= 2.0 %}
+                            C-
+                        {% else %}
+                            F
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set grade = record.grade %}
+                        {% if grade is none and record.rstatus %}
+                            {# Do not display anything for null grades with a registration status #}
+                        {% else %}
+                            {{ grade }}
+                        {% endif %}
+                    </td>
+                    <td>{{ record.rstatus }}</td>
+                    <td>{{ record.semester }}</td>
+                    <td>{{ record.year }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No records found.</p>
+{% endif %}
+
+</body>
 {% endblock %}
 </html>

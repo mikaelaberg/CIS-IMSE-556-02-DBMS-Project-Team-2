@@ -1,4 +1,6 @@
 import psycopg2
+
+import alumni
 import applicant_info
 import graduate_secretary
 import user
@@ -123,7 +125,9 @@ def graduation_application():
 
 @app.route('/alumni_page')
 def alumni_page():
-    return render_template('alumni_page.html')
+    alumni_details = alumni.Alumni()
+    alumni_details.get_alumni_for_id(active_user.id)
+    return render_template('alumni_page.html', userdetails=alumni_details)
 
 
 @app.route('/faculty/graduatesecretary')
@@ -853,11 +857,20 @@ def update_record():
         # Iterate over form data to update records
         for key, value in request.form.items():
             if key.startswith('grade_'):
-                student_id, course_no, section_no = key.split('_')
-                registration_status = request.form.get(f"status_{student_id}_{course_no}_{section_no}")
+                # Extract student_id, course_no, and section_no from the form field name
+                prefix_length = len('grade_')
+                identifiers = key[prefix_length:].split('_')
+                if len(identifiers) == 3:
+                    student_id, course_no, section_no = identifiers
+                else:
+                    continue
+
+                # Get the registration status corresponding to the grade
+                status_key = f"status_{student_id}_{course_no}_{section_no}"
+                registration_status = request.form.get(status_key)
 
                 # Ensure NULL values for grade if not "completed" or "dropped" status
-                if registration_status not in ["completed", "dropped"]:
+                if registration_status not in ["Completed", "Dropped"]:
                     value = None
 
                 print("Updating record with the following details:")
@@ -871,7 +884,7 @@ def update_record():
                 cur.execute("""
                     UPDATE starrs."ATTENDS_SECTION"
                     SET "GRADE" = %s, "REGISTRATION STATUS" = %s
-                    WHERE "GRADE" = %s AND "COURSE_NO" = %s AND "SECTION_NO" = %s
+                    WHERE "USER_ID" = %s AND "COURSE_NO" = %s AND "SECTION_NO" = %s
                 """, (value, registration_status, student_id, course_no, section_no))
 
                 print("Record updated successfully.")
@@ -885,7 +898,6 @@ def update_record():
 
         # Return a success response
         return jsonify({'message': 'Records updated successfully'})
-
     except Exception as e:
         # Handle exceptions
         print("Error:", e)
