@@ -4,6 +4,7 @@ import graduate_secretary
 import user
 import sys
 import traceback
+import admission_review
 from datetime import datetime
 from dbconfig import db_config
 from flask import Flask, render_template, jsonify, session, redirect, request, flash, url_for
@@ -55,7 +56,7 @@ def submit_review():
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\") VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO starrs.\"ADMISSION_REVIEW\" (\"REVIEWER_ID\", \"ADMISSION_ID\", \"ADMISSION_COMMENT\", \"ADMISSION_RANKING\", \"ADMISSION_DECISION\", \"COMMITTEE_ID\", \"ADVISOR\") VALUES (%s, %s, %s, %s, %s, %s, %s)",
             (reviewer_id, admission_id, comments, ranking, decision, committee_id, advisor))
         cur.execute(
             "UPDATE starrs.\"ADMISSION\" SET \"ADMISSION_COMMENT\" = %s, \"ADMISSION_RANKING\" = %s, \"COMMITTEE_DECISION\" = %s, \"RECOMMENDED_ADVISOR\" = %s WHERE \"ADMISSION_ID\" = %s",
@@ -90,6 +91,7 @@ def logout():
 @app.route('/login2/<loginid>')
 def login2(loginid):
     if active_user.login(loginid):
+        session['user_id'] = active_user.id  # Assign the user ID to the session
         return redirect('/login_redirect')
     else:
         return redirect("/error")
@@ -569,7 +571,7 @@ def submit_course_registration():
                         SELECT 1
                         FROM starrs."ATTENDS_SECTION" a
                         WHERE
-                            a."STUDENT_ID" = %s
+                            a."USER_ID" = %s
                             AND a."SECTION_NO" = s."SECTION_NO"
                             AND a."SEMESTER" = s."SEMESTER"
                             AND a."YEAR" = s."YEAR"
@@ -609,7 +611,7 @@ def submit_course_registration():
 def enroll_course():
     try:
         # Access form data from the request object
-        student_id = session.get('user_id')  # Get student ID from session
+        student_id = active_user.id  # Get student ID from session
         course_no = request.form['course_no']
         section_no = request.form['section_no']
         semester = request.form['semester']
@@ -705,7 +707,7 @@ def drop_course():
 def search_attendance_records():
     try:
         # Access user ID from session
-        user_id = session.get('user_id')
+        user_id = active_user.id
         if not user_id:
             return render_template('error.html', message="Unable to recognize ID.")
 
@@ -728,7 +730,7 @@ def search_attendance_records():
             FROM starrs."ATTENDS_SECTION" a
             INNER JOIN starrs."SECTION" s ON a."SECTION_NO" = s."SECTION_NO"
             INNER JOIN starrs."COURSE" c ON s."COURSE_NO" = c."COURSE_NO"
-            WHERE a."STUDENT_ID" = '{user_id}'
+            WHERE a."USER_ID" = '{user_id}'
         """
 
         cur.execute(attend_section_query)

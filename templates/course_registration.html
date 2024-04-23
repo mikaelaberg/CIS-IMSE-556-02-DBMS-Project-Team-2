@@ -158,7 +158,6 @@ function showFields() {
     var semesterYearFields = document.getElementById('semester_year_fields');
     var departmentField = document.getElementById('department_field');
     var studentIdField = document.getElementById('student_id_field');
-    var searchResults = document.getElementById('search_results');
     var form = document.getElementById('search_form');
 
     // Hide/show fields based on selected action
@@ -167,21 +166,18 @@ function showFields() {
         semesterYearFields.style.display = 'block';
         departmentField.style.display = 'block';
         studentIdField.style.display = 'none';
-        searchResults.style.display = 'block';
         form.action = "/submit_course_registration";
     } else if (action === 'record') {
         courseFields.style.display = 'none';
         semesterYearFields.style.display = 'none';
         departmentField.style.display = 'none';
         studentIdField.style.display = 'block';
-        searchResults.style.display = 'block';
         form.action = "/search_attendance_records";
     } else {
         courseFields.style.display = 'none';
         semesterYearFields.style.display = 'none';
         departmentField.style.display = 'block';
         studentIdField.style.display = 'none';
-        searchResults.style.display = 'none'; // Hide Course Information for Transcript
         form.action = "/submit_transcript";
     }
 
@@ -263,23 +259,23 @@ function showFields() {
     <button type="submit">Search</button>
 </form>
 
-<div id="search_results">
-    <h2>Course Information</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Course Number</th>
-                <th>Title</th>
-                <th>Credits</th>
-                <th>Department</th>
-                <th>Section Number</th>
-                <th>Semester</th>
-                <th>Year</th>
-                <th>Instructor</th>
-            </tr>
-        </thead>
-    </table>
-</div>
+<!--<div id="search_results">-->
+<!--    <h2>Course Information</h2>-->
+<!--    <table>-->
+<!--        <thead>-->
+<!--            <tr>-->
+<!--                <th>Course Number</th>-->
+<!--                <th>Title</th>-->
+<!--                <th>Credits</th>-->
+<!--                <th>Department</th>-->
+<!--                <th>Section Number</th>-->
+<!--                <th>Semester</th>-->
+<!--                <th>Year</th>-->
+<!--                <th>Instructor</th>-->
+<!--            </tr>-->
+<!--        </thead>-->
+<!--    </table>-->
+<!--</div>-->
 </body>
 {% endblock %}
 </html>
